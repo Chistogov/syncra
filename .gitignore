@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+
+# Production build outputs
+dist/
+dist-electron/
+release/
+*.tsbuildinfo
+
+# Private certificates & keys
+*.pem
+*.key
+
+# Local Environment Variables & Secrets
+.env
+.env.local
+.env.*.local
+
+# MinIO & MC local test binaries & data
+*.exe
+!build/icon.ico
+minio_test_data/
+mc_config/
+.minio.sys/
+
+# Logs & OS metadata
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db
+*.tmp
+.idea/
+.vscode/

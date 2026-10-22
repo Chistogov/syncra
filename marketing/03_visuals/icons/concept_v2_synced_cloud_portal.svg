@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient strictly matching Landing Reference -->
+    <linearGradient id="portalBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b101d" />
+      <stop offset="50%" stop-color="#070a13" />
+      <stop offset="100%" stop-color="#030508" />
+    </linearGradient>
+
+    <!-- Glassmorphic Border with 1px Glow -->
+    <linearGradient id="portalBorder" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.8" />
+      <stop offset="50%" stop-color="#10b981" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.1" />
+    </linearGradient>
+
+    <!-- Neon Glow Filter -->
+    <filter id="portalGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="12" stdDeviation="20" flood-color="#06b6d4" flood-opacity="0.5" />
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#10b981" flood-opacity="0.3" />
+    </filter>
+
+    <!-- Ribbon Gradients -->
+    <linearGradient id="neonCyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#67e8f9" />
+      <stop offset="50%" stop-color="#06b6d4" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+
+    <linearGradient id="neonMint" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399" />
+      <stop offset="50%" stop-color="#10b981" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+  </defs>
+
+  <!-- Container Squircle -->
+  <rect x="24" y="24" width="464" height="464" rx="104" fill="url(#portalBg)" />
+  <rect x="25" y="25" width="462" height="462" rx="103" fill="none" stroke="url(#portalBorder)" stroke-width="2.5" />
+
+  <!-- The Interlocking Cloud Sync Portal -->
+  <g filter="url(#portalGlow)">
+    <!-- Base Cloud Silhouette (Outer Neon Trace) -->
+    <path d="M 180 340 
+             C 130 340 100 300 100 255 
+             C 100 215 130 180 170 175 
+             C 190 120 245 95 295 95 
+             C 355 95 405 135 415 190 
+             C 445 195 470 220 470 255 
+             C 470 295 435 340 380 340 
+             Z" 
+          fill="none" 
+          stroke="url(#neonCyan)" 
+          stroke-width="36" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" />
+
+    <!-- Inner Synchronous Flow Arc (Emerald/Mint Ribbon) -->
+    <path d="M 205 285 
+             L 256 235 
+             L 307 285 
+             M 256 240 
+             L 256 370" 
+          fill="none" 
+          stroke="url(#neonMint)" 
+          stroke-width="32" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" />
+
+    <!-- Center Luminous Pulse Point -->
+    <circle cx="256" cy="235" r="12" fill="#ffffff" />
+  </g>
+</svg>

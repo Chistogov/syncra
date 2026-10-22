@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light Mode (Plane.so crisp clean light theme) */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    --primary: 226 70% 55.5%; /* Plane signature blue #3e63dd */
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 226 70% 48%;
+
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+
+    --accent: 240 4.8% 92.5%;
+    --accent-foreground: 240 5.9% 10%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 226 70% 55.5%;
+
+    --radius: 0.5rem;
+
+    --plane-rail: 240 4.8% 96.5%;
+    --plane-surface: 0 0% 98.5%;
+    --plane-elevated: 0 0% 100%;
+  }
+
+  .dark {
+    /* Dark Mode (Plane.so deep dark theme) */
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 4.5%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 4.5%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 226 70% 55.5%;
+    --primary-foreground: 0 0% 100%;
+    --primary-hover: 226 70% 50%;
+
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 3.7% 14%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 226 70% 55.5%;
+
+    --plane-rail: 240 10% 3.2%;
+    --plane-surface: 240 10% 4.8%;
+    --plane-elevated: 240 10% 6.5%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased font-sans select-none overflow-hidden;
+    letter-spacing: -0.011em;
+  }
+
+  /* Form inputs and textareas must always allow text selection and cursor placement */
+  input, textarea, [contenteditable="true"] {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+  }
+}
+
+/* Plane.so sleek minimalist scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <!-- Primary SEO Meta Tags -->
+  <title>Syncra — Профессиональный десктоп-клиент для S3, MinIO и Ceph на Windows</title>
+  <meta name="title" content="Syncra — Профессиональный десктоп-клиент для S3, MinIO и Ceph на Windows">
+  <meta name="description" content="Syncra — быстрый и эстетичный десктоп-клиент для MinIO, AWS S3, Ceph, Yandex Cloud. Открытие и автосохранение файлов Word/Excel прямо в S3 по Ctrl+S. Встроенный редактор кода Monaco и визуальное управление сервером. Попробуйте 14 дней Pro бесплатно!">
+  <meta name="keywords" content="Syncra, Syncra S3, MinIO GUI, Syncra client, MinIO Windows client, S3 browser, Edit in place S3, MinIO mc GUI alternative, AWS S3 client Windows, Yandex Object Storage client, Ceph GUI, Monaco editor S3, S3 presigned URLs, S3 object tagging, Cyberduck alternative, WinSCP S3 alternative">
+  <meta name="author" content="Syncra Team">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://syncra.app/">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://syncra.app/">
+  <meta property="og:title" content="Syncra — Революция в управлении S3 и MinIO">
+  <meta property="og:description" content="Современный десктоп-клиент с прозрачным редактированием файлов в Word/Excel по Ctrl+S, редактором кода и пультом управления MinIO без командной строки.">
+  <meta property="og:image" content="assets/showcase.jpg">
+  <meta property="og:site_name" content="Syncra">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:url" content="https://syncra.app/">
+  <meta name="twitter:title" content="Syncra — Pro Desktop Client for S3 & MinIO">
+  <meta name="twitter:description" content="Редактируйте файлы в S3 на лету, управляйте кластером MinIO визуально. 14 дней полного Pro бесплатно!">
+  <meta name="twitter:image" content="assets/showcase.jpg">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" href="assets/app_icon.png">
+
+  <!-- Schema.org Structured Data: SoftwareApplication -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Syncra",
+    "alternateName": "Syncra S3",
+    "operatingSystem": "Windows 10, Windows 11",
+    "applicationCategory": "DeveloperApplication",
+    "offers": [
+      {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+        "name": "Syncra Community (Бесплатно)"
+      },
+      {
+        "@type": "Offer",
+        "price": "29",
+        "priceCurrency": "USD",
+        "name": "Syncra Pro Lifetime"
+      }
+    ],
+    "description": "Syncra — профессиональный графический клиент для работы с MinIO, AWS S3, Ceph и Yandex Object Storage с поддержкой прямого редактирования файлов Edit-in-Place и встроенным редактором кода.",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.9",
+      "ratingCount": "142"
+    }
+  }
+  </script>
+
+  <!-- Schema.org Structured Data: FAQPage for Google Snippets -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Как работает прямое редактирование файлов Edit-in-Place в Syncra?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Технология Edit-in-Place в Syncra позволяет открывать файлы Word, Excel, Photoshop или текстовые документы прямо из облачного хранилища в привычных офисных программах. При нажатии Ctrl+S файл автоматически сохраняется обратно в облако без утомительного ручного скачивания и повторной загрузки."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Безопасны ли мои ключи доступа в Syncra?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Абсолютно. Syncra работает локально на вашем компьютере. Ключи доступа надежно шифруются системным хранилищем операционной системы и никогда не передаются на сторонние серверы."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Как работает 14-дневный ознакомительный период Syncra?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "При первом запуске Syncra автоматически открывает 14 дней полного профессионального доступа ко всем функциям без ограничений и без необходимости вводить данные банковской карты."
+        }
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    /* Design System matching Synaptix Reference */
+    :root {
+      --bg: #070a13;
+      --bg-surface: #0c1222;
+      --bg-card: rgba(13, 19, 36, 0.75);
+      --border-card: rgba(34, 211, 238, 0.18);
+      --border-card-hover: rgba(34, 211, 238, 0.45);
+      --accent-mint: #10b981;
+      --accent-cyan: #22d3ee;
+      --accent-blue: #3b82f6;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 20% 10%, rgba(6, 182, 212, 0.12) 0%, transparent 45%),
+        radial-gradient(circle at 80% 25%, rgba(59, 130, 246, 0.12) 0%, transparent 50%),
+        radial-gradient(circle at 50% 70%, rgba(16, 185, 129, 0.08) 0%, transparent 55%);
+      background-attachment: fixed;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Typography */
+    .gradient-text {
+      background: linear-gradient(135deg, #10b981 0%, #22d3ee 45%, #3b82f6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .gradient-cyan-blue {
+      background: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Glassmorphism Cards */
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-card);
+      border-radius: 20px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+    .glass-card:hover {
+      border-color: var(--border-card-hover);
+      box-shadow: 0 15px 35px -10px rgba(6, 182, 212, 0.2);
+      transform: translateY(-4px);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      padding: 12px 28px;
+      border-radius: 9999px;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      cursor: pointer;
+      border: none;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #06b6d4 0%, #2563eb 100%);
+      color: #ffffff;
+      box-shadow: 0 0 25px rgba(6, 182, 212, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #0891b2 0%, #1d4ed8 100%);
+      box-shadow: 0 0 35px rgba(6, 182, 212, 0.6);
+      transform: scale(1.02);
+    }
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(8px);
+    }
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(34, 211, 238, 0.4);
+    }
+    .btn-mint {
+      background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+      color: #06121e;
+      font-weight: 700;
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.4);
+    }
+    .btn-mint:hover {
+      box-shadow: 0 0 35px rgba(16, 185, 129, 0.6);
+      transform: scale(1.02);
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--accent-mint);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 6px 16px;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+    }
+    .badge-pro {
+      background: rgba(34, 211, 238, 0.12);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(34, 211, 238, 0.3);
+    }
+
+    /* Sticky Navigation */
+    header.sticky-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(7, 10, 19, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 16px 0;
+    }
+    .nav-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+      font-weight: 800;
+      font-size: 1.35rem;
+      letter-spacing: -0.02em;
+    }
+    .brand img {
+      width: 40px;
+      height: 40px;
+      border-radius: 9px;
+      box-shadow: 0 0 18px rgba(6, 182, 212, 0.45);
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.95rem;
+      transition: color 0.2s ease;
+    }
+    .nav-links a:hover {
+      color: var(--accent-cyan);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 80px 0 60px;
+      text-align: center;
+      position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(2.5rem, 5.2vw, 4.4rem);
+      font-weight: 850;
+      line-height: 1.15;
+      letter-spacing: -0.02em;
+      margin: 20px auto 24px;
+      max-width: 980px;
+    }
+    .hero p.lead {
+      font-size: clamp(1.1rem, 2vw, 1.35rem);
+      color: var(--text-muted);
+      max-width: 780px;
+      margin: 0 auto 36px;
+      font-weight: 400;
+    }
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+    .hero-guarantee {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      color: var(--text-dim);
+      font-size: 0.9rem;
+      flex-wrap: wrap;
+    }
+    .hero-guarantee span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Providers Logos Bar */
+    .providers-bar {
+      margin: 50px 0 70px;
+      text-align: center;
+    }
+    .providers-bar p {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 24px;
+    }
+    .providers-list {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 36px;
+      flex-wrap: wrap;
+      opacity: 0.75;
+    }
+    .provider-pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 8px 20px;
+      border-radius: 9999px;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .provider-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
+    }
+
+    /* App Interactive Mockup Container */
+    .mockup-wrapper {
+      margin: 0 auto 100px;
+      max-width: 1140px;
+      position: relative;
+    }
+    .mockup-frame {
+      background: #090e1a;
+      border: 1px solid rgba(34, 211, 238, 0.25);
+      border-radius: 20px;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 50px rgba(6, 182, 212, 0.15);
+      overflow: hidden;
+    }
+    .mockup-header {
+      background: #0d1424;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .mockup-dots {
+      display: flex;
+      gap: 8px;
+    }
+    .mockup-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    .dot-red { background: #ef4444; }
+    .dot-yellow { background: #f59e0b; }
+    .dot-green { background: #10b981; }
+    .mockup-title {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-family: monospace;
+    }
+
+    /* Mockup Interior */
+    .mockup-body {
+      display: grid;
+      grid-template-columns: 240px 1fr 300px;
+      min-height: 480px;
+      background: #070b14;
+    }
+    .mockup-sidebar {
+      background: #0a0f1d;
+      border-right: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 16px;
+    }
+    .mockup-main {
+      padding: 20px;
+      background: #080c18;
+      display: flex;
+      flex-direction: column;
+    }
+    .mockup-right {
+      background: #0a0f1d;
+      border-left: 1px solid rgba(255, 255, 255, 0.06);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Flagship Advantages Grid */
+    .section {
+      padding: 80px 0;
+    }
+    .section-header {
+      text-align: center;
+      max-width: 760px;
+      margin: 0 auto 50px;
+    }
+    .section-header h2 {
+      font-size: clamp(2rem, 3.5vw, 2.8rem);
+      font-weight: 750;
+      letter-spacing: -0.01em;
+      margin: 12px 0 16px;
+    }
+    .section-header p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+
+    .flagship-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 28px;
+    }
+    .flagship-card {
+      padding: 36px;
+      display: flex;
+      flex-direction: column;
+    }
+    .flagship-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 24px;
+      font-size: 1.5rem;
+    }
+    .icon-cyan {
+      background: rgba(34, 211, 238, 0.12);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(34, 211, 238, 0.3);
+    }
+    .icon-mint {
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--accent-mint);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .icon-blue {
+      background: rgba(59, 130, 246, 0.12);
+      color: var(--accent-blue);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+    .flagship-card h3 {
+      font-size: 1.4rem;
+      margin-bottom: 12px;
+      color: #ffffff;
+    }
+    .flagship-card p {
+      color: var(--text-muted);
+      font-size: 1rem;
+      margin-bottom: 20px;
+      flex: 1;
+    }
+    .flagship-pill {
+      font-size: 0.8rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #94a3b8;
+      align-self: flex-start;
+    }
+
+    /* Tabs for Full Feature Coverage */
+    .tabs-nav {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 36px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      padding: 10px 22px;
+      border-radius: 9999px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .tab-btn.active, .tab-btn:hover {
+      background: rgba(34, 211, 238, 0.15);
+      color: var(--accent-cyan);
+      border-color: rgba(34, 211, 238, 0.4);
+      box-shadow: 0 0 20px rgba(6, 182, 212, 0.2);
+    }
+
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .features-list-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+    .feature-item {
+      padding: 24px;
+      border-radius: 16px;
+      background: rgba(13, 19, 36, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .feature-item h4 {
+      font-size: 1.1rem;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #ffffff;
+    }
+    .feature-item h4 span.bullet {
+      color: var(--accent-mint);
+    }
+    .feature-item p {
+      font-size: 0.92rem;
+      color: var(--text-muted);
+    }
+
+    /* Comparison Table */
+    .table-wrapper {
+      overflow-x: auto;
+      margin: 30px 0;
+      border-radius: 20px;
+      border: 1px solid var(--border-card);
+      background: var(--bg-card);
+    }
+    table.compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    table.compare-table th, table.compare-table td {
+      padding: 18px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    table.compare-table th {
+      background: rgba(13, 19, 36, 0.9);
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    table.compare-table th.col-highlight {
+      color: var(--accent-cyan);
+      background: rgba(6, 182, 212, 0.1);
+      border-bottom: 2px solid var(--accent-cyan);
+    }
+    table.compare-table td.col-highlight {
+      background: rgba(6, 182, 212, 0.04);
+      font-weight: 600;
+    }
+    .status-yes { color: var(--accent-mint); font-weight: bold; }
+    .status-no { color: #ef4444; }
+
+    /* Pricing Section */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 32px;
+      align-items: stretch;
+      margin-top: 40px;
+    }
+    .pricing-card {
+      padding: 40px 32px;
+      display: flex;
+      flex-direction: column;
+    }
+    .pricing-card.featured {
+      border: 2px solid var(--accent-cyan);
+      box-shadow: 0 0 40px rgba(6, 182, 212, 0.25);
+      transform: scale(1.03);
+    }
+    .pricing-header h3 {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+    }
+    .pricing-price {
+      font-size: 3rem;
+      font-weight: 800;
+      margin: 20px 0;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+    .pricing-price span.period {
+      font-size: 1rem;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+    .pricing-features {
+      list-style: none;
+      margin: 24px 0 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      flex: 1;
+    }
+    .pricing-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 0.95rem;
+      color: #cbd5e1;
+    }
+    .pricing-features li span.check {
+      color: var(--accent-mint);
+      font-weight: bold;
+    }
+
+    /* FAQ Section */
+    .faq-list {
+      max-width: 820px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .faq-item {
+      background: rgba(13, 19, 36, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .faq-item:hover {
+      border-color: rgba(34, 211, 238, 0.3);
+    }
+    .faq-question {
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    .faq-icon {
+      font-size: 1.2rem;
+      transition: transform 0.3s ease;
+    }
+    .faq-answer {
+      padding: 0 24px 20px;
+      color: var(--text-muted);
+      font-size: 0.98rem;
+      display: none;
+    }
+    .faq-item.open .faq-answer {
+      display: block;
+    }
+    .faq-item.open .faq-icon {
+      transform: rotate(45deg);
+      color: var(--accent-cyan);
+    }
+
+    /* CTA Bottom Box */
+    .cta-banner {
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(37, 99, 235, 0.15) 100%);
+      border: 1px solid rgba(34, 211, 238, 0.3);
+      border-radius: 28px;
+      padding: 60px 40px;
+      text-align: center;
+      margin: 80px 0;
+      box-shadow: 0 0 60px rgba(6, 182, 212, 0.15);
+    }
+    .cta-banner h2 {
+      font-size: clamp(2rem, 3.5vw, 2.8rem);
+      font-weight: 800;
+      margin-bottom: 16px;
+    }
+
+    /* Footer */
+    footer {
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 60px 0 30px;
+      background: #05070d;
+      font-size: 0.9rem;
+      color: var(--text-dim);
+    }
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 40px;
+      margin-bottom: 40px;
+    }
+    .footer-col h5 {
+      color: #ffffff;
+      font-size: 1rem;
+      margin-bottom: 16px;
+    }
+    .footer-col ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .footer-col a {
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-col a:hover {
+      color: var(--accent-cyan);
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .mockup-body {
+        grid-template-columns: 1fr;
+      }
+      .mockup-sidebar, .mockup-right {
+        display: none;
+      }
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+      .nav-links {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- STICKY TOP NAV -->
+  <header class="sticky-nav">
+    <div class="container nav-container">
+      <a href="#" class="brand">
+        <img src="assets/app_icon.png" alt="Syncra Logo">
+        <span>Syncra <span class="gradient-text">S3</span></span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#flagship">Преимущества</a></li>
+        <li><a href="#capabilities">Все возможности</a></li>
+        <li><a href="#comparison">Сравнение</a></li>
+        <li><a href="#pricing">Тарифы</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+      <div style="display: flex; gap: 12px; align-items: center;">
+        <a href="light.html" title="Переключиться на светлую тему" style="display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 9999px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #cbd5e1; font-size: 0.85rem; font-weight: 600; text-decoration: none; transition: all 0.2s ease;">
+          <span>☀️</span>
+          <span style="display: none; @media(min-width: 640px){display: inline;}">Светлая тема</span>
+        </a>
+        <a href="#pricing" class="btn btn-primary" style="padding: 9px 20px; font-size: 0.88rem;">Скачать Pro Trial</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- HERO SECTION -->
+    <section class="hero container">
+      <div class="badge">
+        <span>✦</span>
+        <span>Новое поколение работы с S3 • 14 дней полного Pro бесплатно</span>
+      </div>
+
+      <h1>
+        Ультимативный десктоп-клиент для <span class="gradient-text">MinIO & S3</span> без консольных команд.
+      </h1>
+
+      <p class="lead">
+        С <strong>Syncra</strong> вы открываете файлы Word и Excel прямо из хранилища по <kbd style="background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 4px; font-family: monospace;">Ctrl + S</kbd>, управляете сервером MinIO через современный графический интерфейс и правите код во встроенном редакторе Monaco.
+      </p>
+
+      <div class="hero-actions">
+        <a href="#download" class="btn btn-primary" style="font-size: 1.05rem; padding: 14px 36px;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Скачать Syncra для Windows
+        </a>
+        <a href="#flagship" class="btn btn-secondary" style="font-size: 1.05rem; padding: 14px 30px;">
+          Смотреть возможности
+        </a>
+      </div>
+
+      <div class="hero-guarantee">
+        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> 14 дней полного доступа ко всем функциям</span>
+        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Без ввода банковской карты</span>
+        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Ключи доступа хранятся исключительно локально</span>
+      </div>
+
+      <!-- Cloud Providers Bar -->
+      <div class="providers-bar">
+        <p>Полная совместимость со всеми популярными объектными хранилищами</p>
+        <div class="providers-list">
+          <div class="provider-pill"><span class="provider-dot"></span> MinIO Cluster</div>
+          <div class="provider-pill"><span class="provider-dot"></span> Amazon AWS S3</div>
+          <div class="provider-pill"><span class="provider-dot"></span> Yandex Object Storage</div>
+          <div class="provider-pill"><span class="provider-dot"></span> Ceph Storage</div>
+          <div class="provider-pill"><span class="provider-dot"></span> Cloudflare R2</div>
+          <div class="provider-pill"><span class="provider-dot"></span> Wasabi & Локальные S3</div>
+        </div>
+      </div>
+
+      <!-- INTERACTIVE APP MOCKUP -->
+      <div class="mockup-wrapper">
+        <div class="mockup-frame">
+          <div class="mockup-header">
+            <div class="mockup-dots">
+              <span class="mockup-dot dot-red"></span>
+              <span class="mockup-dot dot-yellow"></span>
+              <span class="mockup-dot dot-green"></span>
+            </div>
+            <div class="mockup-title" style="display: flex; align-items: center; gap: 8px;">
+              <img src="assets/app_icon.png" alt="Syncra Icon" style="width: 18px; height: 18px; border-radius: 4px;">
+              <span>Syncra v2.4 — MinIO Production Cluster — s3.corp-cloud.internal / prod-assets / 2026 / Q4 /</span>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>
+              <span style="font-size: 0.75rem; color: #10b981; font-weight: 600;">В сети • 14ms</span>
+            </div>
+          </div>
+
+          <div class="mockup-body">
+            <!-- Sidebar: Profiles & Buckets -->
+            <div class="mockup-sidebar">
+              <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; margin-bottom: 12px;">Профили (4 активных)</div>
+              <div style="background: rgba(34, 211, 238, 0.1); border-left: 3px solid var(--accent-cyan); padding: 8px 12px; border-radius: 4px; font-size: 0.85rem; color: #fff; margin-bottom: 6px;">MinIO Corp Cluster</div>
+              <div style="padding: 8px 12px; font-size: 0.85rem; color: var(--text-muted);">AWS S3 EU-Central-1</div>
+              <div style="padding: 8px 12px; font-size: 0.85rem; color: var(--text-muted);">Yandex Cloud Backup</div>
+              
+              <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; margin: 24px 0 12px;">Бакеты (8)</div>
+              <div style="font-size: 0.85rem; color: #cbd5e1; padding: 6px 0;">📦 prod-assets <span style="font-size: 0.75rem; color: #64748b;">(1.4 TB)</span></div>
+              <div style="font-size: 0.85rem; color: #cbd5e1; padding: 6px 0;">📦 db-backups-daily</div>
+              <div style="font-size: 0.85rem; color: #cbd5e1; padding: 6px 0;">📦 media-thumbnails</div>
+              <div style="font-size: 0.85rem; color: #cbd5e1; padding: 6px 0;">📦 documents-archive</div>
+            </div>
+
+            <!-- Main File Explorer View -->
+            <div class="mockup-main">
+              <!-- Breadcrumbs & Search -->
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                <div style="font-size: 0.85rem; color: var(--accent-cyan); font-family: monospace;">prod-assets / 2026 / Q4 / contracts /</div>
+                <div style="background: rgba(255,255,255,0.05); padding: 4px 12px; border-radius: 6px; font-size: 0.8rem; color: var(--text-muted);">Поиск: Ctrl + F</div>
+              </div>
+
+              <!-- Live File Table -->
+              <div style="display: flex; flex-direction: column; gap: 8px; flex: 1;">
+                
+                <!-- File 1: In-Place Editing Triggered -->
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(34, 211, 238, 0.08); border: 1px solid rgba(34, 211, 238, 0.3); border-radius: 8px;">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="color: #38bdf8; font-weight: bold;">📄</span>
+                    <div>
+                      <div style="font-size: 0.9rem; font-weight: 600; color: #ffffff;">Годовой_Отчет_2026.docx</div>
+                      <div style="font-size: 0.75rem; color: var(--accent-mint);">● Прямое редактирование (Word): автосохранение по Ctrl+S</div>
+                    </div>
+                  </div>
+                  <span class="badge" style="font-size: 0.75rem; padding: 3px 10px;">Синхронизировано</span>
+                </div>
+
+                <!-- File 2: Monaco Code -->
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255, 255, 255, 0.02); border-radius: 8px;">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="color: #f59e0b; font-weight: bold;">⚙️</span>
+                    <div>
+                      <div style="font-size: 0.9rem; color: #e2e8f0;">cluster-policy-iam.json</div>
+                      <div style="font-size: 0.75rem; color: var(--text-dim);">Редактор кода • 14.2 KB</div>
+                    </div>
+                  </div>
+                  <span style="font-size: 0.8rem; color: var(--text-muted);">Политика доступа</span>
+                </div>
+
+                <!-- File 3: PDF Document -->
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255, 255, 255, 0.02); border-radius: 8px;">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="color: #ef4444; font-weight: bold;">📕</span>
+                    <div>
+                      <div style="font-size: 0.9rem; color: #e2e8f0;">Аудит_Безопасности.pdf</div>
+                      <div style="font-size: 0.75rem; color: var(--text-dim);">Быстрый просмотр по Space • 2.8 MB</div>
+                    </div>
+                  </div>
+                  <span style="font-size: 0.8rem; color: var(--accent-cyan);">Временная ссылка</span>
+                </div>
+
+                <!-- File 4: Media -->
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255, 255, 255, 0.02); border-radius: 8px;">
+                  <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="color: #10b981; font-weight: bold;">🖼️</span>
+                    <div>
+                      <div style="font-size: 0.9rem; color: #e2e8f0;">баннер_презентации_4k.webp</div>
+                      <div style="font-size: 0.75rem; color: var(--text-dim);">Галерея с зумом • 8.4 MB</div>
+                    </div>
+                  </div>
+                  <span style="font-size: 0.75rem; background: #1e293b; padding: 3px 8px; border-radius: 4px; color: #94a3b8;">тег: маркетинг</span>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Right Panel: Transfer Queue & Properties -->
+            <div class="mockup-right">
+              <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; margin-bottom: 12px;">Очередь передач</div>
+              
+              <div style="background: rgba(255,255,255,0.03); padding: 12px; border-radius: 8px; margin-bottom: 12px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 6px;">
+                  <span>архив_базы_данных.tar.gz</span>
+                  <span style="color: var(--accent-cyan); font-weight: 600;">84 MB/s</span>
+                </div>
+                <div style="background: #1e293b; height: 6px; border-radius: 3px; overflow: hidden;">
+                  <div style="background: linear-gradient(90deg, #10b981, #06b6d4); width: 72%; height: 100%;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-dim); margin-top: 4px;">
+                  <span>1.8 GB из 2.5 GB</span>
+                  <span>72%</span>
+                </div>
+              </div>
+
+              <div style="font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; font-weight: 700; margin: 16px 0 10px;">Состояние серверов MinIO</div>
+              <div style="font-size: 0.8rem; color: #cbd5e1; display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>Серверы:</span> <span style="color: #10b981; font-weight: 600;">4 / 4 В сети</span>
+              </div>
+              <div style="font-size: 0.8rem; color: #cbd5e1; display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>Диски пула:</span> <span style="color: #10b981; font-weight: 600;">16 / 16 Исправны</span>
+              </div>
+              <div style="font-size: 0.8rem; color: #cbd5e1; display: flex; justify-content: space-between;">
+                <span>Занято:</span> <span>4.2 TB / 12 TB (35%)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: FLAGSHIP ADVANTAGES -->
+    <section id="flagship" class="section container">
+      <div class="section-header">
+        <div class="badge">Флагманские преимущества Syncra</div>
+        <h2>То, чего нет ни в одном другом S3-клиенте</h2>
+        <p>Мы решили главные проблемы при работе с облачными хранилищами, превратив S3 в полноценное и удобное рабочее пространство.</p>
+      </div>
+
+      <div class="flagship-grid">
+        
+        <!-- Advantage 1: Edit-in-Place -->
+        <div class="glass-card flagship-card">
+          <div class="flagship-icon icon-cyan">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          </div>
+          <h3>Двустороннее прозрачное редактирование (Edit-in-Place)</h3>
+          <p>
+            Открывайте документы Word, таблицы Excel, графику в Photoshop или текстовые файлы прямо из облачного хранилища. При обычном сохранении по нажатию <strong>Ctrl + S</strong> изменения автоматически отправляются обратно в облако. Больше никаких лишних ручных скачиваний и повторных загрузок.
+          </p>
+          <span class="flagship-pill">Экономит до 1.5 часов в день</span>
+        </div>
+
+        <!-- Advantage 2: Monaco Editor -->
+        <div class="glass-card flagship-card">
+          <div class="flagship-icon icon-mint">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+          </div>
+          <h3>Встроенный редактор кода и конфигураций</h3>
+          <p>
+            Полноценная среда для быстрой правки данных прямо внутри Syncra. Просматривайте и редактируйте конфигурационные файлы JSON, YAML, SQL, Shell, Python в облаке с подсветкой синтаксиса для 15+ языков, нумерацией строк и мгновенным сохранением по <strong>Ctrl + S</strong>.
+          </p>
+          <span class="flagship-pill">Подсветка синтаксиса и проверка ошибок</span>
+        </div>
+
+        <!-- Advantage 3: MinIO Studio GUI -->
+        <div class="glass-card flagship-card">
+          <div class="flagship-icon icon-blue">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+          </div>
+          <h3>Визуальный центр управления сервером MinIO</h3>
+          <p>
+            Удобный графический пульт вместо работы через терминал: наглядный мониторинг состояния кластера и накопителей, удобное управление пользователями и группами, визуальный конструктор политик безопасности и настройка серверного сжатия данных.
+          </p>
+          <span class="flagship-pill">Управление сервером без командной строки</span>
+        </div>
+
+        <!-- Advantage 4: OS Clipboard -->
+        <div class="glass-card flagship-card">
+          <div class="flagship-icon icon-cyan">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+          </div>
+          <h3>Копирование файлов в системный буфер обмена Windows</h3>
+          <p>
+            Максимально привычный опыт: нажмите «Копировать» на нужном файле в Syncra и сразу вставьте его по <kbd>Ctrl + V</kbd> в папку Проводника Windows, прикрепите в мессенджер или в письмо Outlook.
+          </p>
+          <span class="flagship-pill">Нативная интеграция с Windows</span>
+        </div>
+
+        <!-- Advantage 5: Presigned URLs -->
+        <div class="glass-card flagship-card">
+          <div class="flagship-icon icon-mint">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          </div>
+          <h3>Генерация временных защищенных ссылок</h3>
+          <p>
+            Делитесь файлами с коллегами и заказчиками в 1 клик. Создавайте защищенные ссылки с ограниченным сроком действия (15 минут, 1 час, 24 часа или 7 дней) без выдачи постоянных доступов к хранилищу.
+          </p>
+          <span class="flagship-pill">Безопасный обмен без паролей</span>
+        </div>
+
+        <!-- Advantage 6: Local Web Server -->
+        <div class="glass-card flagship-card">
+          <div class="flagship-icon icon-blue">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          </div>
+          <h3>Локальный беспроводной доступ со смартфонов</h3>
+          <p>
+            Открывайте файловое хранилище через браузер смартфона или планшета в пределах вашей локальной сети по Wi-Fi. Быстрый доступ к документам без установки дополнительных приложений на мобильные устройства.
+          </p>
+          <span class="flagship-pill">Быстрый мобильный просмотр</span>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION: COMPREHENSIVE CAPABILITIES -->
+    <section id="capabilities" class="section container">
+      <div class="section-header">
+        <div class="badge">Функциональный арсенал Syncra</div>
+        <h2>Все инструменты для продуктивной работы</h2>
+        <p>Продуманное до мелочей рабочее место для специалистов, работающих с большими объемами данных.</p>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab('tab-base', this)">1. Файловый менеджер и навигация</button>
+        <button class="tab-btn" onclick="switchTab('tab-media', this)">2. Просмотр документов и медиа</button>
+        <button class="tab-btn" onclick="switchTab('tab-tags', this)">3. Управление тегами и поиск</button>
+        <button class="tab-btn" onclick="switchTab('tab-security', this)">4. Безопасность и контроль доступа</button>
+        <button class="tab-btn" onclick="switchTab('tab-minio', this)">5. Управление кластером MinIO</button>
+      </div>
+
+      <!-- TAB 1: Base Operations -->
+      <div id="tab-base" class="tab-content active">
+        <div class="features-list-grid">
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Мультипрофильность без ограничений</h4>
+            <p>Подключение к MinIO, AWS S3, Ceph, Yandex Cloud, Wasabi, Cloudflare R2. Храните неограниченное число серверов в профессиональной версии Syncra.</p>
+          </div>
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Проверка доступности соединения</h4>
+            <p>Моментальная проверка подключения и правильности учетных данных до сохранения настроек, наглядный индикатор статуса серверов в реальном времени.</p>
+          </div>
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Интерактивная строка пути</h4>
+            <p>Удобная навигационная цепочка каталогов для мгновенного перемещения на любой уровень вложенности виртуальных папок в один клик.</p>
+          </div>
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Два режима: таблица и сетка</h4>
+            <p>Быстрое переключение между подробной таблицей параметров и наглядной карточной сеткой с крупными миниатюрами файлов.</p>
+          </div>
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Рекурсивная загрузка папок и Drag-and-Drop</h4>
+            <p>Просто перетаскивайте данные из Проводника в окно Syncra. Клиент автоматически воспроизводит всю вложенную структуру директорий.</p>
+          </div>
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Очередь передач с контролем скорости</h4>
+            <p>Информативная выдвижная панель с отображением скорости передачи данных, прогресс-барами и автоматическим возобновлением при нестабильной связи.</p>
+          </div>
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Множественный выбор и горячие клавиши</h4>
+            <p>Привычные комбинации клавиш: выбор диапазона с Shift, выделение всего по Ctrl + A, быстрый просмотр по Space и удаление по Delete.</p>
+          </div>
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Темная и светлая темы оформления</h4>
+            <p>Эргономичная контрастная темная тема для снижения нагрузки на глаза и аккуратная светлая тема с автосохранением выбора пользователя.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: Media & Quick Look -->
+      <div id="tab-media" class="tab-content">
+        <div class="features-list-grid">
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Быстрый просмотр по клавише Space</h4>
+            <p>Мгновенный предпросмотр медиафайлов без скачивания на диск: изображения (PNG, JPG, WebP, GIF, SVG), а также воспроизведение аудио и видео.</p>
+          </div>
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Встроенный просмотрщик документов PDF</h4>
+            <p>Удобный просмотр документов PDF с постраничной навигацией, масштабированием, подгонкой по ширине страницы и выводом на печать.</p>
+          </div>
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Интерактивная фотогалерея</h4>
+            <p>Полноэкранный режим галереи для изображений с плавной каруселью, зумом колесиком мыши, панорамированием и переключением стрелками.</p>
+          </div>
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Подробные свойства и атрибуты файлов</h4>
+            <p>Отображение точного размера файла, контрольной суммы, типа содержимого, даты изменения и класса хранения объекта в облаке.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: Tagging & Filters -->
+      <div id="tab-tags" class="tab-content">
+        <div class="features-list-grid">
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Управление мета-тегами S3</h4>
+            <p>Просмотр, назначение и редактирование меток для файлов. Визуальные значки наличия тегов отображаются прямо в таблице объектов.</p>
+          </div>
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Групповое назначение тегов</h4>
+            <p>Выделите десятки файлов и присвойте им общие категории и метки в одно действие с автоматическим контролем стандартов хранилища.</p>
+          </div>
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Многокритериальная фильтрация по тегам</h4>
+            <p>Умный поиск файлов по тегам с поддержкой логических условий: поиск по любому из выбранных тегов, по всем тегам одновременно или по точному совпадению.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: Security & IAM -->
+      <div id="tab-security" class="tab-content">
+        <div class="features-list-grid">
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Интеллектуальная проверка прав</h4>
+            <p>Syncra автоматически определяет уровень доступа пользователя и скрывает недоступные действия, предотвращая случайные ошибки доступа.</p>
+          </div>
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Гибкие профили доступа</h4>
+            <p>Возможность явно переключить режим работы профиля: администратор, полный доступ или защищенный режим «только чтение» для защиты от случайных изменений.</p>
+          </div>
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Временные ссылки для скачивания</h4>
+            <p>Создание прямых ссылок с ограниченным сроком действия (от 15 минут до 7 дней) для быстрой передачи файлов партнерам и клиентам.</p>
+          </div>
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Автономная активация лицензии</h4>
+            <p>Возможность активации профессиональной версии по персональному ключу без необходимости подключения к интернету.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: MinIO Studio Admin -->
+      <div id="tab-minio" class="tab-content">
+        <div class="features-list-grid">
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Мониторинг серверов и дисков</h4>
+            <p>Наглядный контроль доступности серверов, исправности дисков пула, времени непрерывной работы и занятого дискового пространства в реальном времени.</p>
+          </div>
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Управление пользователями и ключами</h4>
+            <p>Создание новых учетных записей MinIO, смена паролей, генерация ключей доступа и назначение правил безопасности в удобном интерфейсе.</p>
+          </div>
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Визуальный конструктор прав доступа</h4>
+            <p>Создание точных правил доступа к данным с помощью понятных переключателей и категорий без ручного написания сложных конфигураций.</p>
+          </div>
+          <div class="feature-item">
+            <h4><span class="bullet">✓</span> Оптимизация и сжатие данных</h4>
+            <p>Удобное включение серверного сжатия данных MinIO, выбор типов файлов для сжатия и оптимизация используемого дискового пространства.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION: COMPETITOR COMPARISON -->
+    <section id="comparison" class="section container">
+      <div class="section-header">
+        <div class="badge">Честное сравнение</div>
+        <h2>Почему профессионалы выбирают Syncra</h2>
+        <p>Наглядное сопоставление ключевых возможностей с популярными решениями на рынке.</p>
+      </div>
+
+      <div class="table-wrapper">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Возможность / Критерий</th>
+              <th class="col-highlight">Syncra</th>
+              <th>Cyberduck</th>
+              <th>WinSCP</th>
+              <th>S3 Browser (Legacy)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Редактирование в Word/Excel с автосохранением</strong></td>
+              <td class="col-highlight status-yes">✅ Встроено (Сохранение по Ctrl+S)</td>
+              <td class="status-no">❌ Неудобно / Ручной режим</td>
+              <td class="status-no">❌ Нет поддержки</td>
+              <td class="status-no">❌ Только платно и со сбоями</td>
+            </tr>
+            <tr>
+              <td><strong>Встроенный редактор кода с подсветкой</strong></td>
+              <td class="col-highlight status-yes">✅ Редактор Monaco (15+ языков)</td>
+              <td class="status-no">❌ Внешний блокнот</td>
+              <td class="status-no">❌ Базовый текст</td>
+              <td class="status-no">❌ Нет</td>
+            </tr>
+            <tr>
+              <td><strong>Графический пульт управления MinIO</strong></td>
+              <td class="col-highlight status-yes">✅ Полный центр (серверы, права, юзеры)</td>
+              <td class="status-no">❌ Нет</td>
+              <td class="status-no">❌ Нет</td>
+              <td class="status-no">❌ Нет</td>
+            </tr>
+            <tr>
+              <td><strong>Вставка файлов в Проводник через Ctrl+V</strong></td>
+              <td class="col-highlight status-yes">✅ Нативная вставка в систему</td>
+              <td class="status-no">❌ Нет</td>
+              <td class="status-no">❌ Только через локальный диск</td>
+              <td class="status-no">❌ Нет</td>
+            </tr>
+            <tr>
+              <td><strong>Современный эргономичный интерфейс</strong></td>
+              <td class="col-highlight status-yes">✅ Стильный темный дизайн</td>
+              <td>⚠️ Перегруженный стиль</td>
+              <td>⚠️ Интерфейс 2005 года</td>
+              <td>❌ Интерфейс Windows 98</td>
+            </tr>
+            <tr>
+              <td><strong>Встроенный просмотр PDF и видео без скачивания</strong></td>
+              <td class="col-highlight status-yes">✅ Встроенный PDF с зумом и печатью</td>
+              <td>⚠️ Только базовые картинки</td>
+              <td class="status-no">❌ Нет</td>
+              <td class="status-no">❌ Скачивает на диск</td>
+            </tr>
+            <tr>
+              <td><strong>Создание временных ссылок в один клик</strong></td>
+              <td class="col-highlight status-yes">✅ Быстрое создание ссылок</td>
+              <td>⚠️ Сложная настройка</td>
+              <td class="status-no">❌ Нет</td>
+              <td>⚠️ Платная опция</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SECTION: PRICING -->
+    <section id="pricing" class="section container">
+      <div class="section-header">
+        <div class="badge">Прозрачные тарифы</div>
+        <h2>Выберите подходящий вариант Syncra</h2>
+        <p>Начните с 14 дней полного профессионального доступа. Никаких скрытых платежей.</p>
+      </div>
+
+      <div class="pricing-grid">
+        
+        <!-- Trial Card -->
+        <div class="glass-card pricing-card">
+          <div class="pricing-header">
+            <h3>Syncra Trial</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Для быстрого знакомства с возможностями</p>
+          </div>
+          <div class="pricing-price">
+            0 ₽ <span class="period">/ 14 дней</span>
+          </div>
+          <ul class="pricing-features">
+            <li><span class="check">✓</span> <strong>100% возможностей профессиональной версии</strong></li>
+            <li><span class="check">✓</span> Неограниченное число серверов</li>
+            <li><span class="check">✓</span> Редактирование в Word и Excel с автосохранением</li>
+            <li><span class="check">✓</span> Редактор кода с сохранением по Ctrl+S</li>
+            <li><span class="check">✓</span> Графический пульт управления сервером</li>
+            <li><span class="check">✓</span> Без ввода банковской карты</li>
+          </ul>
+          <a href="#download" class="btn btn-secondary" style="width: 100%;">Начать 14 дней Pro</a>
+        </div>
+
+        <!-- Pro Lifetime Card (Featured) -->
+        <div class="glass-card pricing-card featured">
+          <div style="position: absolute; top: -14px; right: 28px;">
+            <span class="badge badge-pro" style="box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);">Хит • Бессрочная лицензия</span>
+          </div>
+          <div class="pricing-header">
+            <h3>Syncra Pro</h3>
+            <p style="color: var(--accent-cyan); font-size: 0.9rem;">Для специалистов, разработчиков и команд</p>
+          </div>
+          <div class="pricing-price gradient-text">
+            $29 <span class="period">разово (Навсегда)</span>
+          </div>
+          <ul class="pricing-features">
+            <li><span class="check">✓</span> <strong>Бессрочная лицензия для одного пользователя</strong></li>
+            <li><span class="check">✓</span> <strong>1 год бесплатных обновлений</strong></li>
+            <li><span class="check">✓</span> Неограниченное количество серверов и хранилищ</li>
+            <li><span class="check">✓</span> Редактирование документов с автосохранением по Ctrl+S</li>
+            <li><span class="check">✓</span> Встроенный редактор кода с проверкой синтаксиса</li>
+            <li><span class="check">✓</span> Полный центр визуального администрирования</li>
+            <li><span class="check">✓</span> Создание защищенных временных ссылок в 1 клик</li>
+            <li><span class="check">✓</span> Беспроводной локальный доступ для смартфонов</li>
+            <li><span class="check">✓</span> Возможность автономной активации без интернета</li>
+          </ul>
+          <a href="#buy-pro" class="btn btn-primary" style="width: 100%; font-size: 1.05rem;">Купить Syncra Pro ($29)</a>
+        </div>
+
+        <!-- Community Card -->
+        <div class="glass-card pricing-card">
+          <div class="pricing-header">
+            <h3>Syncra Community</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Для базового индивидуального использования</p>
+          </div>
+          <div class="pricing-price">
+            0 ₽ <span class="period">навсегда</span>
+          </div>
+          <ul class="pricing-features">
+            <li><span class="check">✓</span> Бессрочный бесплатный доступ</li>
+            <li><span class="check">✓</span> Подключение до 3 серверов</li>
+            <li><span class="check">✓</span> Базовые загрузки и выгрузки файлов</li>
+            <li><span class="check">✓</span> Быстрый просмотр документов, фото и видео</li>
+            <li><span class="check">✓</span> Управление тегами объектов</li>
+            <li><span class="check">✓</span> Вставка файлов в Проводник Windows</li>
+            <li style="color: var(--text-dim); text-decoration: line-through;"><span>✕</span> Автосохранение при редактировании в Word/Excel</li>
+            <li style="color: var(--text-dim); text-decoration: line-through;"><span>✕</span> Центр администрирования MinIO</li>
+          </ul>
+          <a href="#download" class="btn btn-secondary" style="width: 100%;">Скачать бесплатно</a>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION: FAQ -->
+    <section id="faq" class="section container">
+      <div class="section-header">
+        <div class="badge">Вопросы и ответы</div>
+        <h2>Часто задаваемые вопросы о Syncra</h2>
+        <p>Всё, что необходимо знать перед началом работы.</p>
+      </div>
+
+      <div class="faq-list">
+        
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-question">
+            <span>Как работает прямое редактирование файлов (Edit-in-Place) в Syncra?</span>
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-answer">
+            Вы открываете нужный файл (например, документ Word или таблицу Excel) двойным кликом в Syncra. Документ открывается в установленной у вас офисной программе. Вы вносите необходимые изменения и нажимаете привычное сохранение по <kbd>Ctrl + S</kbd> — Syncra автоматически фиксирует сохранение и моментально отправляет обновленную версию обратно в ваше облачное хранилище. Вам больше не нужно сохранять копии на рабочий стол и вручную загружать их обратно.
+          </div>
+        </div>
+
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-question">
+            <span>Безопасны ли мои ключи доступа к хранилищу в Syncra?</span>
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-answer">
+            Да, абсолютно. Syncra — это полностью локальная десктопная программа. Ваши ключи доступа надежно шифруются системным хранилищем операционной системы и никогда не передаются на сторонние серверы. Все сетевые запросы отправляются исключительно на указанный вами сервер хранилища.
+          </div>
+        </div>
+
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-question">
+            <span>Что произойдет после истечения 14 дней ознакомительного периода?</span>
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-answer">
+            Доступ к файлам не блокируется. Программа автоматически переходит в бессрочный базовый режим Syncra Community. Все ваши подключения, бакеты и стандартные файловые операции скачивания и загрузки продолжат работать. Ограничиваются лишь профессиональные функции (редактирование документов с автосохранением, администрирование сервера и лимит до 3 серверов). Вы в любой момент сможете продолжить пользоваться базовой версией или приобрести ключ Syncra Pro.
+          </div>
+        </div>
+
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-question">
+            <span>Можно ли активировать Syncra Pro на компьютерах без интернета?</span>
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-answer">
+            Да. Лицензионный ключ Syncra Pro проверяется полностью автономно внутри приложения без обязательного выхода в глобальную сеть. Клиент отлично подходит для изолированных корпоративных контуров и закрытых локальных сетей.
+          </div>
+        </div>
+
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-question">
+            <span>Поддерживаются ли нестандартные и локальные конфигурации серверов?</span>
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-answer">
+            Да, в настройках профилей Syncra предусмотрены гибкие переключатели режимов адресации. Это гарантирует бесперебойную совместимость как с локальными инсталляциями MinIO или Ceph, так и с популярными облачными провайдерами (AWS S3, Yandex Cloud, Cloudflare R2).
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION: BOTTOM CTA -->
+    <section id="download" class="container">
+      <div class="cta-banner">
+        <div class="badge" style="margin-bottom: 20px;">Готовы ускорить работу в несколько раз?</div>
+        <h2>Скачайте Syncra прямо сейчас</h2>
+        <p style="color: var(--text-muted); max-width: 600px; margin: 0 auto 32px; font-size: 1.15rem;">
+          Автоматическая активация 14 дней профессионального доступа. Без регистрации, без кредитной карты, чистый установщик для Windows.
+        </p>
+        <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+          <a href="#" class="btn btn-mint" style="font-size: 1.1rem; padding: 16px 40px;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            Скачать Syncra (.exe)
+          </a>
+          <a href="#" class="btn btn-secondary" style="font-size: 1.1rem; padding: 16px 32px;">
+            Скачать портативную версию (.zip)
+          </a>
+        </div>
+        <div style="margin-top: 24px; font-size: 0.85rem; color: var(--text-dim);">
+          Совместимо с Windows 10, Windows 11 (64-bit) • Быстрая установка • Проверено на безопасность
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container footer-grid">
+      <div class="footer-col">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+          <img src="assets/app_icon.png" alt="Syncra Logo" style="width: 32px; height: 32px; border-radius: 7px; box-shadow: 0 0 12px rgba(6, 182, 212, 0.3);">
+          <span style="font-weight: 800; color: #fff; font-size: 1.2rem; letter-spacing: -0.01em;">Syncra</span>
+        </div>
+        <p style="margin-bottom: 16px; line-height: 1.6;">
+          Современный высокопроизводительный клиент для объектных хранилищ MinIO, AWS S3, Ceph и Yandex Cloud с возможностью двусторонней синхронизации Edit-in-Place.
+        </p>
+        <p style="color: #475569;">© 2026 Syncra. Все права защищены.</p>
+      </div>
+
+      <div class="footer-col">
+        <h5>Продукт</h5>
+        <ul>
+          <li><a href="#flagship">Преимущества</a></li>
+          <li><a href="#capabilities">Все возможности</a></li>
+          <li><a href="#comparison">Сравнение с аналогами</a></li>
+          <li><a href="#pricing">Тарифы и лицензия</a></li>
+          <li><a href="#download">Скачать дистрибутив</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h5>Совместимость</h5>
+        <ul>
+          <li><a href="#">MinIO Object Storage</a></li>
+          <li><a href="#">Amazon AWS S3</a></li>
+          <li><a href="#">Yandex Object Storage</a></li>
+          <li><a href="#">Ceph RADOS Gateway</a></li>
+          <li><a href="#">Cloudflare R2 & Wasabi</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h5>Поддержка</h5>
+        <ul>
+          <li><a href="#faq">База знаний (FAQ)</a></li>
+          <li><a href="#">Документация</a></li>
+          <li><a href="#">Активация Pro-ключа</a></li>
+          <li><a href="#">Telegram сообщество</a></li>
+          <li><a href="#">Политика конфиденциальности</a></li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Interactive Scripts -->
+  <script>
+    // Tab Switching
+    function switchTab(tabId, btn) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    // FAQ Accordion
+    function toggleFaq(item) {
+      const isOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(el => el.classList.remove('open'));
+      if (!isOpen) {
+        item.classList.add('open');
+      }
+    }
+  </script>
+</body>
+</html>

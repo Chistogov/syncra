@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Syncra — PNG Варианты иконки (S + Облако)</title>
+  <style>
+    :root {
+      --bg: #070a13;
+      --card-bg: #0d1220;
+      --card-border: rgba(34, 211, 238, 0.2);
+      --accent-cyan: #22d3ee;
+      --accent-mint: #10b981;
+      --accent-blue: #3b82f6;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      background-image: 
+        radial-gradient(circle at 15% 10%, rgba(6, 182, 212, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 50%, rgba(59, 130, 246, 0.12) 0%, transparent 50%);
+      color: var(--text);
+      padding: 40px 24px;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    header {
+      margin-bottom: 40px;
+      text-align: center;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--accent-mint);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      padding: 6px 16px;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+    }
+    h1 {
+      font-size: 2.3rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #10b981 0%, #22d3ee 50%, #3b82f6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 12px;
+    }
+    p.lead {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .section-title {
+      font-size: 1.5rem;
+      margin: 40px 0 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(34, 211, 238, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 28px;
+      margin-bottom: 40px;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 12px 30px -10px rgba(0,0,0,0.7);
+    }
+    /* Checkerboard for testing true transparency */
+    .checkerboard {
+      background-color: #0b0f19;
+      background-image: 
+        linear-gradient(45deg, #131929 25%, transparent 25%), 
+        linear-gradient(-45deg, #131929 25%, transparent 25%), 
+        linear-gradient(45deg, transparent 75%, #131929 75%), 
+        linear-gradient(-45deg, transparent 75%, #131929 75%);
+      background-size: 24px 24px;
+      background-position: 0 0, 0 12px, 12px -12px, -12px 0px;
+      padding: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 280px;
+    }
+    .checkerboard-light {
+      background-color: #e2e8f0;
+      background-image: 
+        linear-gradient(45deg, #cbd5e1 25%, transparent 25%), 
+        linear-gradient(-45deg, #cbd5e1 25%, transparent 25%), 
+        linear-gradient(45deg, transparent 75%, #cbd5e1 75%), 
+        linear-gradient(-45deg, transparent 75%, #cbd5e1 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+      padding: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      margin-top: 12px;
+    }
+    .card img {
+      max-width: 100%;
+      height: auto;
+      max-height: 220px;
+      filter: drop-shadow(0 15px 25px rgba(0,0,0,0.5));
+    }
+    .card-body {
+      padding: 24px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .card-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .card-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 16px;
+      flex: 1;
+    }
+    .file-badge {
+      font-family: monospace;
+      font-size: 0.8rem;
+      background: rgba(34, 211, 238, 0.1);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(34, 211, 238, 0.25);
+      padding: 4px 8px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      display: inline-block;
+    }
+    .light-test-label {
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-top: 10px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge">✦ PNG с чистым альфа-каналом (1024×1024 & 512×512)</div>
+      <h1>Варианты иконки: «Буква S и облако вокруг неё»</h1>
+      <p class="lead">
+        Концепция полностью сохранена. Сформированы два типа файлов: 
+        <strong>(1) Без фона</strong> — только парящая буква S и облако, 
+        и <strong>(2) В скругленном квадрате</strong> — с прозрачностью вокруг самого сквиркла.
+      </p>
+    </header>
+
+    <!-- OFFICIAL APPROVED ICON SPOTLIGHT -->
+    <h2 class="section-title">🏆 Официальная утвержденная иконка приложения</h2>
+    <div style="background: rgba(13, 18, 32, 0.85); border: 2px solid var(--accent-cyan); border-radius: 24px; padding: 36px; margin-bottom: 40px; box-shadow: 0 0 40px rgba(6, 182, 212, 0.25); display: flex; align-items: center; justify-content: space-around; flex-wrap: wrap; gap: 30px;">
+      <div style="text-align: center;">
+        <img src="official_app_icon.png" alt="Официальная иконка" style="width: 220px; height: 220px; border-radius: 48px; box-shadow: 0 25px 50px rgba(0,0,0,0.8), 0 0 30px rgba(6, 182, 212, 0.4);">
+        <div style="margin-top: 14px; font-weight: 700; color: #fff; font-size: 1.1rem;">Оригинал (512×512 PNG Alpha)</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 16px; max-width: 450px;">
+        <div style="font-size: 1.25rem; font-weight: 700; color: var(--accent-cyan);">Интеграция в дизайн-систему</div>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">
+          Текучая неоновая лента Мебиуса, соединяющая облако и литеру «S». Высочайший контраст, премиальное дымчатое стекло и идеальное соответствие лендингу.
+        </p>
+        <div style="display: flex; gap: 20px; align-items: flex-end; background: #070a13; padding: 16px 20px; border-radius: 14px;">
+          <div style="text-align: center;">
+            <img src="official_app_icon.png" style="width: 64px; height: 64px;">
+            <div style="font-size: 0.75rem; color: #64748b; margin-top: 4px;">64px</div>
+          </div>
+          <div style="text-align: center;">
+            <img src="official_app_icon.png" style="width: 32px; height: 32px;">
+            <div style="font-size: 0.75rem; color: #64748b; margin-top: 4px;">32px</div>
+          </div>
+          <div style="text-align: center;">
+            <img src="official_app_icon.png" style="width: 24px; height: 24px;">
+            <div style="font-size: 0.75rem; color: #64748b; margin-top: 4px;">24px</div>
+          </div>
+          <div style="text-align: center;">
+            <img src="official_app_icon.png" style="width: 16px; height: 16px;">
+            <div style="font-size: 0.75rem; color: #64748b; margin-top: 4px;">16px</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SECTION 1: ISOLATED ICONS (NO BACKGROUND) -->
+    <h2 class="section-title">✨ Тип 1: Только буква S и облако (Без фона, чистый PNG Alpha)</h2>
+    <div class="grid">
+      
+      <!-- Variant 1 Isolated -->
+      <div class="card">
+        <div class="checkerboard">
+          <img src="variant_1_isolated_s_cloud.png" alt="Вариант 1: Без фона" />
+        </div>
+        <div class="card-body">
+          <span class="file-badge">variant_1_isolated_s_cloud.png</span>
+          <div class="card-title">Вариант 1: 3D Fluid Neon (Рекомендуемый)</div>
+          <div class="card-desc">
+            Плавная светящаяся лента: буква S в центре, облачный силуэт вокруг. Мягкое неоновое свечение mint-to-cyan. Полная прозрачность за пределами знака.
+          </div>
+          <div class="light-test-label">Тест на светлом фоне (без черной каемки):</div>
+          <div class="checkerboard-light">
+            <img src="variant_1_isolated_s_cloud.png" style="max-height: 80px;" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Variant 2 Isolated -->
+      <div class="card">
+        <div class="checkerboard">
+          <img src="variant_2_isolated_s_cloud.png" alt="Вариант 2: Без фона" />
+        </div>
+        <div class="card-body">
+          <span class="file-badge">variant_2_isolated_s_cloud.png</span>
+          <div class="card-title">Вариант 2: Original 3D Glass</div>
+          <div class="card-desc">
+            Изолированный знак, извлеченный непосредственно из первоначального 3D-рендера `icon_v2_fluid_cloud.jpg` с сохранением текстуры темного дымчатого стекла.
+          </div>
+          <div class="light-test-label">Тест на светлом фоне:</div>
+          <div class="checkerboard-light">
+            <img src="variant_2_isolated_s_cloud.png" style="max-height: 80px;" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Variant 3 Isolated -->
+      <div class="card">
+        <div class="checkerboard">
+          <img src="variant_3_isolated_s_cloud.png" alt="Вариант 3: Без фона" />
+        </div>
+        <div class="card-body">
+          <span class="file-badge">variant_3_isolated_s_cloud.png</span>
+          <div class="card-title">Вариант 3: High-Contrast Crisp</div>
+          <div class="card-desc">
+            Повышенная контрастность и четкий контур знака. Идеален для интерфейсных кнопок, фавиконов и мелких форматов (16px, 32px), где важна максимальная резкость.
+          </div>
+          <div class="light-test-label">Тест на светлом фоне:</div>
+          <div class="checkerboard-light">
+            <img src="variant_3_isolated_s_cloud.png" style="max-height: 80px;" />
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SECTION 2: SQUIRCLE ICONS -->
+    <h2 class="section-title">📱 Тип 2: На фоне скругленного квадрата (Внешний фон прозрачный)</h2>
+    <div class="grid">
+      
+      <!-- Variant 1 Squircle -->
+      <div class="card">
+        <div class="checkerboard">
+          <img src="variant_1_squircle_s_cloud.png" alt="Вариант 1: В сквиркле" />
+        </div>
+        <div class="card-body">
+          <span class="file-badge">variant_1_squircle_s_cloud.png</span>
+          <div class="card-title">Вариант 1: Luxury Obsidian Glass Squircle</div>
+          <div class="card-desc">
+            Премиальный темный скругленный квадрат с тонкой неоновой фаской (cyan/mint) и светящейся композицией S + облако внутри. Углы квадрата 100% прозрачные.
+          </div>
+          <div class="light-test-label">Тест в доке/на светлом фоне:</div>
+          <div class="checkerboard-light">
+            <img src="variant_1_squircle_s_cloud.png" style="max-height: 90px;" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Variant 2 Squircle -->
+      <div class="card">
+        <div class="checkerboard">
+          <img src="variant_2_squircle_s_cloud.png" alt="Вариант 2: В сквиркле" />
+        </div>
+        <div class="card-body">
+          <span class="file-badge">variant_2_squircle_s_cloud.png</span>
+          <div class="card-title">Вариант 2: Original 3D Render Squircle</div>
+          <div class="card-desc">
+            Оригинальный скругленный контейнер `icon_v2_fluid_cloud` с бесшовным маскированием и мягким антиалиасингом по внешнему краю сквиркла.
+          </div>
+          <div class="light-test-label">Тест в доке/на светлом фоне:</div>
+          <div class="checkerboard-light">
+            <img src="variant_2_squircle_s_cloud.png" style="max-height: 90px;" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Variant 3 Squircle -->
+      <div class="card">
+        <div class="checkerboard">
+          <img src="variant_3_squircle_s_cloud.png" alt="Вариант 3: В сквиркле" />
+        </div>
+        <div class="card-body">
+          <span class="file-badge">variant_3_squircle_s_cloud.png</span>
+          <div class="card-title">Вариант 3: App Store / Fluent UI Squircle</div>
+          <div class="card-desc">
+            Готовая системная десктопная иконка для Windows Store, macOS Dock и установщика с калиброванной геометрией и насыщенным внутренним свечением.
+          </div>
+          <div class="light-test-label">Тест в доке/на светлом фоне:</div>
+          <div class="checkerboard-light">
+            <img src="variant_3_squircle_s_cloud.png" style="max-height: 90px;" />
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>

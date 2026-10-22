@@ -1,0 +1,56 @@
+{
+  "name": "syncra",
+  "productName": "Syncra",
+  "version": "1.0.0",
+  "description": "Syncra — Fast & modern cross-platform desktop explorer for S3 and MinIO (Community Edition)",
+  "main": "dist-electron/main/index.js",
+  "scripts": {
+    "dev:vite": "vite",
+    "build:renderer": "tsc -p tsconfig.json --noEmit && vite build",
+    "build:electron": "tsc -p tsconfig.electron.json",
+    "build": "npm run build:renderer && npm run build:electron",
+    "start": "electron .",
+    "dev": "concurrently -k \"vite\" \"wait-on tcp:5173 && electron .\""
+  },
+  "keywords": [
+    "s3",
+    "minio",
+    "electron",
+    "file-manager",
+    "cloud-storage"
+  ],
+  "author": "MinIO Studio Team",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.714.0",
+    "@aws-sdk/lib-storage": "^3.1153.0",
+    "@aws-sdk/s3-request-presigner": "^3.714.0",
+    "@monaco-editor/react": "^4.7.0",
+    "archiver": "^8.0.0",
+    "chokidar": "^3.6.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.468.0",
+    "mime-types": "^2.1.35",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "systeminformation": "^5.33.16",
+    "tailwind-merge": "^2.5.5"
+  },
+  "devDependencies": {
+    "@types/archiver": "^8.0.0",
+    "@types/mime-types": "^2.1.4",
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "concurrently": "^9.1.0",
+    "cross-env": "^7.0.3",
+    "electron": "^33.2.1",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.16",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11",
+    "wait-on": "^8.0.1"
+  }
+}

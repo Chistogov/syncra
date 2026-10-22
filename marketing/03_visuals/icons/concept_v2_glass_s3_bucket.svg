@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Gradient strictly matching Landing Reference -->
+    <linearGradient id="landingBg2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b101d" />
+      <stop offset="50%" stop-color="#080c16" />
+      <stop offset="100%" stop-color="#04060a" />
+    </linearGradient>
+
+    <!-- Glassmorphic Border with 1px Glow -->
+    <linearGradient id="glassBorder2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.8" />
+      <stop offset="50%" stop-color="#10b981" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.1" />
+    </linearGradient>
+
+    <!-- Bucket Glass Gradients -->
+    <linearGradient id="bucketGlass" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" stop-opacity="0.8" />
+      <stop offset="50%" stop-color="#0f172a" stop-opacity="0.9" />
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0.4" />
+    </linearGradient>
+
+    <linearGradient id="rimGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10b981" />
+      <stop offset="50%" stop-color="#22d3ee" />
+      <stop offset="100%" stop-color="#3b82f6" />
+    </linearGradient>
+
+    <!-- Cloud Symbol Gradient -->
+    <linearGradient id="cloudGlowGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#67e8f9" />
+    </linearGradient>
+
+    <!-- Filter -->
+    <filter id="bucketBloom" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#06b6d4" flood-opacity="0.35" />
+      <feDropShadow dx="0" dy="0" stdDeviation="12" flood-color="#10b981" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- Container Squircle -->
+  <rect x="24" y="24" width="464" height="464" rx="104" fill="url(#landingBg2)" />
+  <rect x="25" y="25" width="462" height="462" rx="103" fill="none" stroke="url(#glassBorder2)" stroke-width="2.5" />
+
+  <!-- S3 Glass Bucket -->
+  <g filter="url(#bucketBloom)">
+    <!-- Top Glowing Rim Ellipse -->
+    <ellipse cx="256" cy="160" rx="136" ry="32" fill="#0f172a" stroke="url(#rimGlow)" stroke-width="6" />
+
+    <!-- Bucket Body -->
+    <path d="M 122 164 
+             L 150 350 
+             C 154 394 358 394 362 350 
+             L 390 164 
+             C 360 196 150 196 122 164 Z" 
+          fill="url(#bucketGlass)" 
+          stroke="url(#rimGlow)" 
+          stroke-width="3.5" />
+
+    <!-- Storage Tier Ribs (Neon Mint / Cyan Edge Lines) -->
+    <path d="M 134 230 C 180 258 332 258 378 230" fill="none" stroke="#22d3ee" stroke-width="4" stroke-linecap="round" opacity="0.6" />
+    <path d="M 144 296 C 180 322 332 322 368 296" fill="none" stroke="#10b981" stroke-width="4" stroke-linecap="round" opacity="0.5" />
+
+    <!-- Center Cloud Management Glyph -->
+    <g transform="translate(256, 260)">
+      <!-- Frosted circular badge -->
+      <circle cx="0" cy="0" r="42" fill="#0b1329" stroke="url(#rimGlow)" stroke-width="3" />
+      <!-- Cloud shape -->
+      <path d="M -18 6 
+               C -28 6 -32 -2 -26 -10 
+               C -24 -20 -8 -20 -2 -14 
+               C 4 -22 22 -20 22 -10 
+               C 28 -10 30 -2 22 6 Z" 
+            fill="url(#cloudGlowGrad)" />
+      <!-- Bi-directional arrows -->
+      <path d="M -6 12 L 0 6 L 6 12 M 0 6 L 0 20" fill="none" stroke="#22d3ee" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+  </g>
+</svg>

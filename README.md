@@ -9,6 +9,10 @@
 
 Designed as an open-core desktop application with a clean Plane.so-inspired dark & light user interface.
 
+<p align="center">
+  <img src="docs/images/main_form.png" alt="Syncra S3 & MinIO Desktop Explorer" width="100%">
+</p>
+
 ---
 
 ## 🌟 Key Features (Community Edition)

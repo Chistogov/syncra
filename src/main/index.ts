@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog, nativeImage, clipboard } from 'electron';
+import { app, BrowserWindow, Menu, ipcMain, dialog, nativeImage, clipboard } from 'electron';
 import fs from 'fs';
 import path from 'path';
 import { execFile } from 'child_process';
@@ -66,6 +66,8 @@ function migrateLegacyUserData() {
 function createWindow() {
   const appIcon = getAppIconPath();
 
+  Menu.setApplicationMenu(null);
+
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 820,
@@ -82,6 +84,9 @@ function createWindow() {
     },
     autoHideMenuBar: true,
   });
+
+  mainWindow.removeMenu();
+  mainWindow.setMenuBarVisibility(false);
 
   watcherService = new FileWatcherService(s3Service);
 

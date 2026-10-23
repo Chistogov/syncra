@@ -26,6 +26,7 @@ import { useTranslation } from '../context/LanguageContext';
 import { ObjectTable } from './ObjectTable';
 import { ObjectGrid } from './ObjectGrid';
 import { ItemContextMenu } from './ItemContextMenu';
+import { FolderContextMenu } from './FolderContextMenu';
 import { ObjectTagsModal } from './ObjectTagsModal';
 import { TagFilterPopover, TagFilterMode } from './TagFilterPopover';
 import { formatBytes, formatSpeed } from '../utils/formatters';
@@ -129,6 +130,9 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
     item: S3Item;
     position: { x: number; y: number };
   } | null>(null);
+  const [folderContextMenu, setFolderContextMenu] = useState<{
+    position: { x: number; y: number };
+  } | null>(null);
   const [taggingItems, setTaggingItems] = useState<S3Item[] | null>(null);
   const [tagsMap, setTagsMap] = useState<Record<string, S3Tag[]>>({});
   const [tagFilterMode, setTagFilterMode] = useState<TagFilterMode>('all');
@@ -147,6 +151,20 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
     setCustomTagQuery('');
   }, []);
 
+  const handleBackgroundContextMenu = useCallback((e: React.MouseEvent) => {
+    // Ignore right clicks on interactive elements like buttons, inputs, links, or table headers
+    const target = e.target as HTMLElement | null;
+    if (target?.closest('button, input, select, textarea, a, thead')) {
+      return;
+    }
+
+    e.preventDefault();
+    setContextMenu(null);
+    setFolderContextMenu({
+      position: { x: e.clientX, y: e.clientY },
+    });
+  }, []);
+
   useEffect(() => {
     setSelectedKeys(new Set());
     setFilterQuery('');
@@ -155,6 +173,7 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
     setCustomTagQuery('');
     setIsMobileSearchOpen(false);
     setContextMenu(null);
+    setFolderContextMenu(null);
   }, [bucket, prefix]);
 
   // Fetch tags in background for current folder items
@@ -892,7 +911,7 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
       )}
 
       {/* Main Viewport */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 overflow-hidden" onContextMenu={handleBackgroundContextMenu}>
         {filteredItems.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center p-8 text-muted-foreground space-y-3">
             <div className="w-12 h-12 rounded-xl bg-muted/40 border border-border flex items-center justify-center text-muted-foreground/60">
@@ -926,7 +945,10 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
             onToggleSelect={handleToggleSelect}
             onSelectAll={handleSelectAll}
             onItemDoubleClick={onItemDoubleClick}
-            onItemContextMenu={(item, pos) => setContextMenu({ item, position: pos })}
+            onItemContextMenu={(item, pos) => {
+              setFolderContextMenu(null);
+              setContextMenu({ item, position: pos });
+            }}
             onPreview={onPreview}
             onDownload={onDownloadItem}
             onOpenExternal={onOpenExternal}
@@ -951,7 +973,10 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
             selectedKeys={selectedKeys}
             onToggleSelect={handleToggleSelect}
             onItemDoubleClick={onItemDoubleClick}
-            onItemContextMenu={(item, pos) => setContextMenu({ item, position: pos })}
+            onItemContextMenu={(item, pos) => {
+              setFolderContextMenu(null);
+              setContextMenu({ item, position: pos });
+            }}
             onPreview={onPreview}
             onDownload={onDownloadItem}
             onOpenExternal={onOpenExternal}
@@ -1100,6 +1125,21 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
         canDeleteItems={canDeleteItems}
         canEditTags={canEditTags}
         isProActive={isProActive}
+      />
+
+      {/* Context Menu for right click on empty/folder background */}
+      <FolderContextMenu
+        isOpen={Boolean(folderContextMenu)}
+        position={folderContextMenu?.position || null}
+        onClose={() => setFolderContextMenu(null)}
+        onUploadFiles={onUploadFilesClick}
+        onUploadFolder={onUploadFolderClick}
+        onCreateFolder={onCreateFolderClick}
+        onRefresh={onRefresh}
+        hasSelection={selectedKeys.size > 0}
+        onClearSelection={() => setSelectedKeys(new Set())}
+        canUpload={canUpload}
+        canCreateFolder={canCreateFolder}
       />
 
       {/* S3 Object Tags Modal */}

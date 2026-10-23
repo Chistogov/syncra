@@ -613,6 +613,11 @@ export const translations = {
     'menu.copyFolderForExplorer': 'Копировать папку для Проводника',
     'menu.copyShortcut': 'Копировать (Ctrl+C)',
     'menu.delete': 'Удалить',
+    'menu.uploadFiles': 'Загрузить файлы',
+    'menu.uploadFolder': 'Загрузить папку',
+    'menu.newFolder': 'Новая папка',
+    'menu.refresh': 'Обновить',
+    'menu.clearSelection': 'Снять выделение',
 
     // MinIO Admin
     'admin.dashboard': 'MinIO Admin Dashboard',
@@ -1236,6 +1241,11 @@ export const translations = {
     'menu.copyFolderForExplorer': 'Copy Folder for Explorer',
     'menu.copyShortcut': 'Copy (Ctrl+C)',
     'menu.delete': 'Delete',
+    'menu.uploadFiles': 'Upload Files',
+    'menu.uploadFolder': 'Upload Folder',
+    'menu.newFolder': 'New Folder',
+    'menu.refresh': 'Refresh',
+    'menu.clearSelection': 'Deselect All',
 
     // MinIO Admin
     'admin.dashboard': 'MinIO Admin Dashboard',

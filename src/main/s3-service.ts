@@ -518,6 +518,7 @@ export class S3Service {
 
   public async scanLocalPaths(localPaths: string[]): Promise<ScannedFile[]> {
     const results: ScannedFile[] = [];
+    const visitedDirs = new Set<string>();
     let itemsCount = 0;
 
     for (const rootPath of localPaths) {
@@ -533,6 +534,13 @@ export class S3Service {
           });
           continue;
         }
+
+        // Canonical real path to detect loops and duplicate visits
+        let rootRealDir = rootPath;
+        try {
+          rootRealDir = await fs.promises.realpath(rootPath);
+        } catch {}
+        visitedDirs.add(rootRealDir);
 
         const rootDir = path.dirname(rootPath);
         const dirQueue: string[] = [rootPath];
@@ -557,7 +565,16 @@ export class S3Service {
             const fullPath = path.join(currentDir, entry.name);
             try {
               if (entry.isDirectory()) {
-                dirQueue.push(fullPath);
+                let realDir = fullPath;
+                try {
+                  realDir = await fs.promises.realpath(fullPath);
+                } catch {}
+
+                // Guard against circular links / junctions / infinite loops
+                if (!visitedDirs.has(realDir)) {
+                  visitedDirs.add(realDir);
+                  dirQueue.push(fullPath);
+                }
               } else if (entry.isFile()) {
                 const stat = await fs.promises.stat(fullPath);
                 const rel = path.relative(rootDir, fullPath).replace(/\\/g, '/');
@@ -566,14 +583,40 @@ export class S3Service {
                   relativePath: rel,
                   size: stat.size,
                 });
+              } else if (entry.isSymbolicLink()) {
+                // Safely handle symlinks: inspect target without crashing on ELOOP or broken targets
+                try {
+                  const targetStat = await fs.promises.stat(fullPath);
+                  if (targetStat.isFile()) {
+                    const rel = path.relative(rootDir, fullPath).replace(/\\/g, '/');
+                    results.push({
+                      localPath: fullPath,
+                      relativePath: rel,
+                      size: targetStat.size,
+                    });
+                  } else if (targetStat.isDirectory()) {
+                    let realDir = fullPath;
+                    try {
+                      realDir = await fs.promises.realpath(fullPath);
+                    } catch {}
+
+                    if (!visitedDirs.has(realDir)) {
+                      visitedDirs.add(realDir);
+                      dirQueue.push(fullPath);
+                    }
+                  }
+                } catch (symlinkErr: any) {
+                  // Broken symlink, ELOOP, or permission denied on symlink target -> safely ignore
+                  console.warn(`[s3Service] Skipping unresolvable symlink ${fullPath}:`, symlinkErr?.message || symlinkErr);
+                }
               }
-            } catch (err) {
-              console.warn(`[s3Service] Cannot stat file ${fullPath}:`, err);
+            } catch (err: any) {
+              console.warn(`[s3Service] Cannot process ${fullPath}:`, err?.message || err);
             }
           }
         }
-      } catch (err) {
-        console.warn(`[s3Service] Error scanning root ${rootPath}:`, err);
+      } catch (err: any) {
+        console.warn(`[s3Service] Error scanning root ${rootPath}:`, err?.message || err);
       }
     }
 

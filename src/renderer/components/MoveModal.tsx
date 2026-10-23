@@ -82,6 +82,22 @@ export const MoveModal: React.FC<MoveModalProps> = ({
     }
   }, [isOpen, currentPath, profile, bucket, loadSubfolders]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isSubmitting) {
+        if (isCreatingFolder) {
+          setIsCreatingFolder(false);
+          setNewFolderName('');
+        } else {
+          onClose();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, isSubmitting, isCreatingFolder, onClose]);
+
   if (!isOpen || items.length === 0) return null;
 
   // Determine current parent of items to know if targetPath is unchanged

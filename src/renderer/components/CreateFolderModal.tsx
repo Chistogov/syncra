@@ -33,6 +33,17 @@ export const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
     }
   }, [isOpen]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isSubmitting) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, isSubmitting, onClose]);
+
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,7 +65,7 @@ export const CreateFolderModal: React.FC<CreateFolderModalProps> = ({
       setFolderName('');
       onClose();
     } catch (err: any) {
-      setError(err.message || 'Ошибка создания папки');
+      setError(err.message || t('folderModal.error'));
     } finally {
       setIsSubmitting(false);
     }

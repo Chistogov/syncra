@@ -231,6 +231,8 @@ export const App: React.FC = () => {
   const [currentPrefix, setCurrentPrefix] = useState<string>('');
   const [items, setItems] = useState<S3Item[]>([]);
   const [loadingItems, setLoadingItems] = useState<boolean>(false);
+  const [nextContinuationToken, setNextContinuationToken] = useState<string | undefined>(undefined);
+  const [loadingMoreItems, setLoadingMoreItems] = useState<boolean>(false);
 
   // Modals
   const [isCreateBucketOpen, setIsCreateBucketOpen] = useState(false);
@@ -241,6 +243,21 @@ export const App: React.FC = () => {
   const [previewingPdfItem, setPreviewingPdfItem] = useState<S3Item | null>(null);
   const [editingMonacoItem, setEditingMonacoItem] = useState<S3Item | null>(null);
   const [galleryItem, setGalleryItem] = useState<S3Item | null>(null);
+
+  // Reset preview drawer when switching bucket or profile
+  useEffect(() => {
+    setPreviewItem(null);
+  }, [selectedBucket, activeProfile]);
+
+  const clearPreviewIfAffected = useCallback((mutatedKeys: string[]) => {
+    setPreviewItem((prev) => {
+      if (!prev) return null;
+      const isAffected = mutatedKeys.some((k) =>
+        k.endsWith('/') ? prev.key.startsWith(k) : prev.key === k
+      );
+      return isAffected ? null : prev;
+    });
+  }, []);
 
   // Transfer Queue & Discovery State
   const [transfers, setTransfers] = useState<TransferProgress[]>([]);
@@ -772,6 +789,7 @@ export const App: React.FC = () => {
   const loadObjects = useCallback(async () => {
     if (!activeProfile || !selectedBucket) {
       setItems([]);
+      setNextContinuationToken(undefined);
       return;
     }
     setLoadingItems(true);
@@ -782,15 +800,43 @@ export const App: React.FC = () => {
         currentPrefix
       );
       setItems(res.items);
+      setNextContinuationToken(res.isTruncated ? res.nextContinuationToken : undefined);
       setIsServerAvailable(true);
     } catch (err) {
       console.error('Failed to load objects:', err);
       setItems([]);
+      setNextContinuationToken(undefined);
       setIsServerAvailable(false);
     } finally {
       setLoadingItems(false);
     }
   }, [activeProfile, selectedBucket, currentPrefix]);
+
+  const loadMoreObjects = useCallback(async () => {
+    if (!activeProfile || !selectedBucket || !nextContinuationToken || loadingMoreItems) {
+      return;
+    }
+    setLoadingMoreItems(true);
+    try {
+      const res = await window.electronAPI.s3.listObjects(
+        activeProfile,
+        selectedBucket,
+        currentPrefix,
+        nextContinuationToken
+      );
+      setItems((prev) => {
+        const existingKeys = new Set(prev.map((i) => i.key));
+        const newItems = res.items.filter((i) => !existingKeys.has(i.key));
+        return [...prev, ...newItems];
+      });
+      setNextContinuationToken(res.isTruncated ? res.nextContinuationToken : undefined);
+      setIsServerAvailable(true);
+    } catch (err) {
+      console.error('Failed to load more objects:', err);
+    } finally {
+      setLoadingMoreItems(false);
+    }
+  }, [activeProfile, selectedBucket, currentPrefix, nextContinuationToken, loadingMoreItems]);
 
   loadObjectsRef.current = loadObjects;
 
@@ -909,10 +955,9 @@ export const App: React.FC = () => {
     } catch (err: any) {
       if (isAccessDeniedError(err)) {
         setPermissions((p) => ({ ...p, canCreateBucket: false }));
-        alert('Отказано в доступе: у вашей учетной записи нет прав на создание бакетов.');
-      } else {
-        alert(`Ошибка создания бакета: ${err.message}`);
+        throw new Error('Отказано в доступе: у вашей учетной записи нет прав на создание бакетов.');
       }
+      throw err;
     }
   };
 
@@ -958,7 +1003,7 @@ export const App: React.FC = () => {
 
   // Handle Folder & File Actions
   const handleCreateFolder = async (folderName: string) => {
-    if (!activeProfile || !selectedBucket) return;
+    if (!activeProfile || !selectedBucket) throw new Error('Не выбран бакет');
     const folderKey = currentPrefix ? `${currentPrefix}${folderName}/` : `${folderName}/`;
     try {
       await window.electronAPI.s3.createFolder(activeProfile, selectedBucket, folderKey);
@@ -966,10 +1011,9 @@ export const App: React.FC = () => {
     } catch (err: any) {
       if (isAccessDeniedError(err)) {
         setPermissions((p) => ({ ...p, canCreateFolder: false, canUpload: false }));
-        alert('Отказано в доступе: у вас нет прав на создание папок и загрузку файлов в этом бакете.');
-      } else {
-        alert(`${t('common.error')}: ${err.message}`);
+        throw new Error('Отказано в доступе: у вас нет прав на создание папок и загрузку файлов в этом бакете.');
       }
+      throw err;
     }
   };
 
@@ -1004,6 +1048,7 @@ export const App: React.FC = () => {
 
     try {
       await window.electronAPI.s3.deleteObjects(activeProfile, selectedBucket, keys);
+      clearPreviewIfAffected(keys);
       await loadObjects();
     } catch (err: any) {
       if (isAccessDeniedError(err)) {
@@ -1624,6 +1669,27 @@ export const App: React.FC = () => {
 
     if (!isExplicitFolder && targetKey) {
       try {
+        // 1. If relative path entered inside a subfolder, check relative to currentPrefix first
+        if (!isFirstSegmentBucket && currentPrefix && !targetKey.startsWith(currentPrefix)) {
+          const relativeKey = `${currentPrefix}${targetKey}`;
+          const relFileItem = await window.electronAPI.s3.headObject(
+            activeProfile,
+            targetBucket,
+            relativeKey
+          );
+          if (relFileItem && !relFileItem.isPrefix) {
+            const lastSlash = relativeKey.lastIndexOf('/');
+            const parentPrefix = lastSlash >= 0 ? relativeKey.substring(0, lastSlash + 1) : '';
+            if (targetBucket !== selectedBucket) {
+              setSelectedBucket(targetBucket);
+            }
+            setCurrentPrefix(parentPrefix);
+            setPreviewItem(relFileItem);
+            return;
+          }
+        }
+
+        // 2. Check full targetKey from bucket root
         const fileItem = await window.electronAPI.s3.headObject(
           activeProfile,
           targetBucket,
@@ -1752,6 +1818,9 @@ export const App: React.FC = () => {
                 prefix={currentPrefix}
                 profile={activeProfile}
                 loading={loadingItems}
+                hasMore={Boolean(nextContinuationToken)}
+                loadingMore={loadingMoreItems}
+                onLoadMore={loadMoreObjects}
                 onRefresh={loadObjects}
                 onOpenFolder={(folderKey) => setCurrentPrefix(folderKey)}
                 onPreview={handlePreviewItem}
@@ -1762,6 +1831,7 @@ export const App: React.FC = () => {
                 onOpenPdf={(item) => setPreviewingPdfItem(item)}
                 onOpenGallery={(item) => setGalleryItem(item)}
                 onDeleteItems={handleDeleteItems}
+                onItemsMutated={clearPreviewIfAffected}
                 onDownloadSelected={handleDownloadMultiple}
                 onCreateFolderClick={() => setIsCreateFolderOpen(true)}
                 onUploadFilesClick={handleUploadFiles}

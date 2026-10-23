@@ -136,7 +136,7 @@ export const BucketContextMenu: React.FC<BucketContextMenuProps> = ({
             {bucket ? (
               <>
                 {/* Rename */}
-                {onRenameBucket && (
+                {canCreateBucket && canDeleteBucket && onRenameBucket && (
                   <button
                     onClick={() => {
                       onClose();
@@ -236,7 +236,7 @@ export const BucketContextMenu: React.FC<BucketContextMenuProps> = ({
               </div>
 
               {/* Rename */}
-              {onRenameBucket && (
+              {canCreateBucket && canDeleteBucket && onRenameBucket && (
                 <button
                   onClick={() => {
                     onClose();

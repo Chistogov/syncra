@@ -72,6 +72,10 @@ interface ObjectBrowserProps {
   onUploadFilesClick: () => void;
   onUploadFolderClick: () => void;
   onFilesDropped: (filePaths: string[]) => void;
+  onItemsMutated?: (keys: string[]) => void;
+  hasMore?: boolean;
+  loadingMore?: boolean;
+  onLoadMore?: () => void;
   permissions?: UserPermissions;
   isProActive?: boolean;
 }
@@ -110,6 +114,10 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
   onUploadFilesClick,
   onUploadFolderClick,
   onFilesDropped,
+  onItemsMutated,
+  hasMore = false,
+  loadingMore = false,
+  onLoadMore,
   permissions,
   isProActive = true,
 }) => {
@@ -118,6 +126,7 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
   const canCreateFolder = permissions?.canCreateFolder ?? true;
   const canDeleteItems = permissions?.canDeleteItems ?? true;
   const canEditTags = permissions?.canEditTags ?? true;
+  const canMutateItems = canUpload && canDeleteItems;
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const [filterQuery, setFilterQuery] = useState('');
   const [selectedKeys, setSelectedKeys] = useState<Set<string>>(new Set());
@@ -379,6 +388,7 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
         newName,
         item.isPrefix
       );
+      onItemsMutated?.([item.key]);
       onRefresh();
       setCopyState({
         isCopying: false,
@@ -388,7 +398,7 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
       if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
       copyTimeoutRef.current = setTimeout(() => setCopyState(null), 3000);
     },
-    [profile, bucket, onRefresh, t]
+    [profile, bucket, onItemsMutated, onRefresh, t]
   );
 
   const handleMoveConfirm = useCallback(
@@ -399,6 +409,7 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
         isPrefix: item.isPrefix,
       }));
       await window.electronAPI.s3.moveObjects(profile, bucket, payload, targetPrefix);
+      onItemsMutated?.(movingItems.map((item) => item.key));
       onRefresh();
       setCopyState({
         isCopying: false,
@@ -408,7 +419,7 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
       if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
       copyTimeoutRef.current = setTimeout(() => setCopyState(null), 3000);
     },
-    [profile, bucket, movingItems, onRefresh, t]
+    [profile, bucket, movingItems, onItemsMutated, onRefresh, t]
   );
 
   useEffect(() => {
@@ -452,7 +463,7 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
         return;
       }
       if (e.key === 'F2') {
-        if (selectedKeys.size === 1) {
+        if (selectedKeys.size === 1 && canMutateItems) {
           const selectedKey = Array.from(selectedKeys)[0];
           const item = items.find((i) => i.key === selectedKey);
           if (item) {
@@ -478,7 +489,7 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedKeys, items, onPreview, onDeleteItems, handleCopySelected, canDeleteItems]);
+  }, [selectedKeys, items, onPreview, onDeleteItems, handleCopySelected, canDeleteItems, canMutateItems]);
 
   const dragCounter = useRef(0);
 
@@ -800,19 +811,21 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
                       </button>
                     );
                   })()}
-                  <button
-                    onClick={() => {
-                      const sel = items.filter((item) => selectedKeys.has(item.key));
-                      if (sel.length > 0) {
-                        setMovingItems(sel);
-                      }
-                    }}
-                    className="flex items-center space-x-1 p-1.5 sm:px-2.5 sm:py-1 text-foreground hover:bg-muted border border-border rounded-md transition-colors font-medium text-xs shadow-xs whitespace-nowrap flex-shrink-0 cursor-pointer"
-                    title={t('menu.move')}
-                  >
-                    <FolderInput className="w-3.5 h-3.5 text-muted-foreground" />
-                    <span className="hidden sm:inline">{t('menu.move')}</span>
-                  </button>
+                  {canMutateItems && (
+                    <button
+                      onClick={() => {
+                        const sel = items.filter((item) => selectedKeys.has(item.key));
+                        if (sel.length > 0) {
+                          setMovingItems(sel);
+                        }
+                      }}
+                      className="flex items-center space-x-1 p-1.5 sm:px-2.5 sm:py-1 text-foreground hover:bg-muted border border-border rounded-md transition-colors font-medium text-xs shadow-xs whitespace-nowrap flex-shrink-0 cursor-pointer"
+                      title={t('menu.move')}
+                    >
+                      <FolderInput className="w-3.5 h-3.5 text-muted-foreground" />
+                      <span className="hidden sm:inline">{t('menu.move')}</span>
+                    </button>
+                  )}
                   <button
                     onClick={() => {
                       const selectedItems = items.filter((item) => selectedKeys.has(item.key));
@@ -1087,6 +1100,24 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
         )}
       </div>
 
+      {/* Pagination Bar (Load More for > 1000 items) */}
+      {hasMore && onLoadMore && (
+        <div className="px-4 py-2 bg-plane-surface/80 border-t border-border flex items-center justify-between text-xs select-none flex-shrink-0">
+          <span className="text-muted-foreground">
+            {t('browser.showingItems', { count: items.length })}
+          </span>
+          <button
+            type="button"
+            onClick={onLoadMore}
+            disabled={loadingMore}
+            className="flex items-center space-x-1.5 px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/25 rounded-md font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loadingMore ? 'animate-spin' : ''}`} />
+            <span>{loadingMore ? t('browser.loadingMore') : t('browser.loadMore')}</span>
+          </button>
+        </div>
+      )}
+
       {/* Plane.so Bottom Status Bar */}
       <div className="h-7 px-4 bg-plane-surface/50 border-t border-border text-[11px] text-muted-foreground flex items-center justify-between select-none">
         <div className="flex items-center space-x-2">
@@ -1206,15 +1237,19 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
         onClose={() => setContextMenu(null)}
         onOpen={(item) => onItemDoubleClick(item)}
         onToggleSelect={(key) => handleToggleSelect(key, false)}
-        onRename={(item) => setRenamingItem(item)}
-        onMove={(item) => {
-          const sel = items.filter((i) => selectedKeys.has(i.key));
-          if (selectedKeys.has(item.key) && sel.length > 1) {
-            setMovingItems(sel);
-          } else {
-            setMovingItems([item]);
-          }
-        }}
+        onRename={canMutateItems ? (item) => setRenamingItem(item) : undefined}
+        onMove={
+          canMutateItems
+            ? (item) => {
+                const sel = items.filter((i) => selectedKeys.has(i.key));
+                if (selectedKeys.has(item.key) && sel.length > 1) {
+                  setMovingItems(sel);
+                } else {
+                  setMovingItems([item]);
+                }
+              }
+            : undefined
+        }
         onCopyPath={handleCopyPath}
         onCopy={(item) => handleCopySelected([item])}
         onOpenTags={(item) => setTaggingItems([item])}

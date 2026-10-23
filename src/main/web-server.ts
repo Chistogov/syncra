@@ -560,6 +560,10 @@ export class WebServerService {
         const r = await this.licenseService.activateLicenseKey(body.key || '');
         return this.sendJson(res, 200, r);
       }
+      if (pathname === '/api/license/setSimulatedExpired' && method === 'POST') {
+        const st = await this.licenseService.getLicenseStatus();
+        return this.sendJson(res, 200, st);
+      }
 
       // 2.5 API: Auth & Permissions
       if (pathname === '/api/auth/checkPermissions' && method === 'POST') {

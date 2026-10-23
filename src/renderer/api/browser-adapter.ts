@@ -435,6 +435,14 @@ export function initBrowserElectronAPI() {
         });
         return results;
       },
+      scanLocalPaths: async (localPaths: string[]): Promise<ScannedFile[]> => {
+        const results: ScannedFile[] = [];
+        for (const lp of localPaths) {
+          const res = await (browserAPI.s3.scanLocalPath(lp));
+          results.push(...res);
+        }
+        return results;
+      },
       downloadDirectory: async (): Promise<number> => {
         return 0;
       },

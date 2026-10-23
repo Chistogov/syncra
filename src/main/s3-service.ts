@@ -430,7 +430,7 @@ export class S3Service {
     onProgress?: (bytes: number, total: number) => void
   ): Promise<boolean> {
     const client = this.getClient(profile);
-    const stats = fs.statSync(localFilePath);
+    const stats = await fs.promises.stat(localFilePath);
     const contentType = (mime.lookup(localFilePath) as string) || 'application/octet-stream';
     const MULTIPART_THRESHOLD = 5 * 1024 * 1024; // 5MB threshold for S3 Multipart Upload
 
@@ -468,11 +468,8 @@ export class S3Service {
       }
     } else {
       // Standard PutObject with Buffer for small files (<= 5MB)
-      // Reading into a Buffer prevents "flowing readable stream" hash calculation errors in @smithy/core
-      const buffer = fs.readFileSync(localFilePath);
-      if (onProgress) {
-        onProgress(0, stats.size);
-      }
+      // Reading asynchronously into a Buffer prevents blocking Node.js event loop
+      const buffer = await fs.promises.readFile(localFilePath);
 
       await client.send(
         new PutObjectCommand({
@@ -515,39 +512,69 @@ export class S3Service {
     return true;
   }
 
-  public scanLocalPath(localPath: string): ScannedFile[] {
+  public async scanLocalPath(localPath: string): Promise<ScannedFile[]> {
+    return this.scanLocalPaths([localPath]);
+  }
+
+  public async scanLocalPaths(localPaths: string[]): Promise<ScannedFile[]> {
     const results: ScannedFile[] = [];
+    let itemsCount = 0;
 
-    const walk = (currentPath: string, rootDir: string) => {
-      const stats = fs.statSync(currentPath);
-      if (stats.isDirectory()) {
-        const entries = fs.readdirSync(currentPath);
-        for (const entry of entries) {
-          walk(path.join(currentPath, entry), rootDir);
+    for (const rootPath of localPaths) {
+      if (!fs.existsSync(rootPath)) continue;
+
+      try {
+        const rootStats = await fs.promises.stat(rootPath);
+        if (!rootStats.isDirectory()) {
+          results.push({
+            localPath: rootPath,
+            relativePath: path.basename(rootPath),
+            size: rootStats.size,
+          });
+          continue;
         }
-      } else if (stats.isFile()) {
-        const rel = path.relative(rootDir, currentPath).replace(/\\/g, '/');
-        results.push({
-          localPath: currentPath,
-          relativePath: rel,
-          size: stats.size,
-        });
+
+        const rootDir = path.dirname(rootPath);
+        const dirQueue: string[] = [rootPath];
+
+        while (dirQueue.length > 0) {
+          const currentDir = dirQueue.shift()!;
+          let entries: fs.Dirent[];
+          try {
+            entries = await fs.promises.readdir(currentDir, { withFileTypes: true });
+          } catch (e) {
+            console.warn(`[s3Service] Cannot read directory ${currentDir}:`, e);
+            continue;
+          }
+
+          for (const entry of entries) {
+            itemsCount++;
+            // Yield every 200 items so Electron main process event loop never hangs
+            if (itemsCount % 200 === 0) {
+              await new Promise((resolve) => setImmediate(resolve));
+            }
+
+            const fullPath = path.join(currentDir, entry.name);
+            try {
+              if (entry.isDirectory()) {
+                dirQueue.push(fullPath);
+              } else if (entry.isFile()) {
+                const stat = await fs.promises.stat(fullPath);
+                const rel = path.relative(rootDir, fullPath).replace(/\\/g, '/');
+                results.push({
+                  localPath: fullPath,
+                  relativePath: rel,
+                  size: stat.size,
+                });
+              }
+            } catch (err) {
+              console.warn(`[s3Service] Cannot stat file ${fullPath}:`, err);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn(`[s3Service] Error scanning root ${rootPath}:`, err);
       }
-    };
-
-    if (!fs.existsSync(localPath)) return [];
-    const stats = fs.statSync(localPath);
-
-    if (stats.isDirectory()) {
-      // Walk directory
-      const baseDir = path.dirname(localPath);
-      walk(localPath, baseDir);
-    } else {
-      results.push({
-        localPath,
-        relativePath: path.basename(localPath),
-        size: stats.size,
-      });
     }
 
     return results;

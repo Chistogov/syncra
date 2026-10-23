@@ -234,7 +234,9 @@ export const App: React.FC = () => {
   // Transfer Queue & Discovery State
   const [transfers, setTransfers] = useState<TransferProgress[]>([]);
   const transfersRef = useRef<TransferProgress[]>([]);
-  transfersRef.current = transfers;
+  const nextQueueIndexRef = useRef<number>(0);
+  const stateFlushTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastStateFlushRef = useRef<number>(0);
 
   const activeTaskIds = useRef<Set<string>>(new Set());
   const activeTaskStartTimes = useRef<Map<string, number>>(new Map());
@@ -378,6 +380,30 @@ export const App: React.FC = () => {
     };
   }, [transfers, discoveryState]);
 
+  // Throttled UI state synchronization (flushes to React state at most every 150ms)
+  const scheduleTransfersStateUpdate = useCallback((immediate = false) => {
+    const doFlush = () => {
+      if (stateFlushTimerRef.current) {
+        clearTimeout(stateFlushTimerRef.current);
+        stateFlushTimerRef.current = null;
+      }
+      lastStateFlushRef.current = Date.now();
+      setTransfers(transfersRef.current.slice());
+    };
+
+    if (immediate) {
+      doFlush();
+      return;
+    }
+
+    const elapsed = Date.now() - lastStateFlushRef.current;
+    if (elapsed >= 150) {
+      doFlush();
+    } else if (!stateFlushTimerRef.current) {
+      stateFlushTimerRef.current = setTimeout(doFlush, 150 - elapsed);
+    }
+  }, []);
+
   // Helper to reliably update a task in both state and ref by ID
   const updateTask = useCallback(
     (id: string, updater: (task: TransferProgress) => TransferProgress) => {
@@ -390,13 +416,11 @@ export const App: React.FC = () => {
         }
       }
       if (idx !== -1 && idx < list.length) {
-        const nextList = list.slice();
-        nextList[idx] = updater(nextList[idx]);
-        transfersRef.current = nextList;
-        setTransfers(nextList);
+        list[idx] = updater(list[idx]);
+        scheduleTransfersStateUpdate();
       }
     },
-    []
+    [scheduleTransfersStateUpdate]
   );
 
   // Worker Queue Pump
@@ -412,37 +436,38 @@ export const App: React.FC = () => {
 
       const list = transfersRef.current;
       const tasksToStart: TransferProgress[] = [];
+      let i = nextQueueIndexRef.current;
+      let firstUnstarted = -1;
 
-      for (let i = 0; i < list.length; i++) {
+      while (i < list.length && tasksToStart.length < availableSlots) {
         const item = list[i];
-        if (
-          (item.status === 'queued' || item.status === 'pending') &&
-          !activeTaskIds.current.has(item.id)
-        ) {
-          tasksToStart.push(item);
-          activeTaskIds.current.add(item.id);
-          if (tasksToStart.length >= availableSlots) break;
+        if (item.status === 'queued' || item.status === 'pending') {
+          if (!activeTaskIds.current.has(item.id)) {
+            tasksToStart.push(item);
+            activeTaskIds.current.add(item.id);
+          } else if (firstUnstarted === -1) {
+            firstUnstarted = i;
+          }
         }
+        i++;
       }
+
+      nextQueueIndexRef.current = firstUnstarted !== -1 ? firstUnstarted : i;
 
       if (tasksToStart.length === 0) return;
 
-      const startIds = new Set(tasksToStart.map((t) => t.id));
-
-      // Mark tasks as 'in_progress' synchronously
-      const updatedList = transfersRef.current.slice();
-      startIds.forEach((id) => {
-        let idx = taskIndexMap.current.get(id);
-        if (idx === undefined || idx >= updatedList.length || updatedList[idx]?.id !== id) {
-          idx = updatedList.findIndex((t) => t.id === id);
-          if (idx !== -1) taskIndexMap.current.set(id, idx);
+      // Mark tasks as 'in_progress' synchronously in transfersRef
+      tasksToStart.forEach((t) => {
+        let idx = taskIndexMap.current.get(t.id);
+        if (idx === undefined || idx >= list.length || list[idx]?.id !== t.id) {
+          idx = list.findIndex((x) => x.id === t.id);
+          if (idx !== -1) taskIndexMap.current.set(t.id, idx);
         }
-        if (idx !== -1 && idx < updatedList.length) {
-          updatedList[idx] = { ...updatedList[idx], status: 'in_progress' };
+        if (idx !== -1 && idx < list.length) {
+          list[idx] = { ...list[idx], status: 'in_progress' };
         }
       });
-      transfersRef.current = updatedList;
-      setTransfers(updatedList);
+      scheduleTransfersStateUpdate();
 
       // Launch worker execution for each started task
       for (const task of tasksToStart) {
@@ -501,9 +526,8 @@ export const App: React.FC = () => {
 
             // If all active upload tasks have completed and no more are queued, flush refresh immediately
             if (activeTaskIds.current.size === 0) {
-              const hasRemainingUploads = transfersRef.current.some(
-                (t) => (t.status === 'queued' || t.status === 'pending') && t.type === 'upload'
-              );
+              scheduleTransfersStateUpdate(true);
+              const hasRemainingUploads = nextQueueIndexRef.current < transfersRef.current.length;
               if (!hasRemainingUploads && refreshTimerRef.current) {
                 clearTimeout(refreshTimerRef.current);
                 refreshTimerRef.current = null;
@@ -519,7 +543,7 @@ export const App: React.FC = () => {
     } finally {
       isWorkerPumping.current = false;
     }
-  }, [updateTask]);
+  }, [updateTask, scheduleTransfersStateUpdate, triggerDebouncedRefresh]);
 
   // Helper to ensure a clean queue if previous session was finished
   const prepareForNewTransfers = useCallback(() => {
@@ -530,6 +554,7 @@ export const App: React.FC = () => {
       activeTaskIds.current.clear();
       activeTaskStartTimes.current.clear();
       taskIndexMap.current.clear();
+      nextQueueIndexRef.current = 0;
       transfersRef.current = [];
       setTransfers([]);
     }
@@ -546,10 +571,10 @@ export const App: React.FC = () => {
       }
       const updated = current.concat(newTasks);
       transfersRef.current = updated;
-      setTransfers(updated);
+      scheduleTransfersStateUpdate(true);
       setTimeout(pumpQueue, 0);
     },
-    [pumpQueue]
+    [pumpQueue, scheduleTransfersStateUpdate]
   );
 
   // Heartbeat to guarantee queue health & detect any zombie tasks
@@ -589,7 +614,7 @@ export const App: React.FC = () => {
     return () => clearInterval(heartbeat);
   }, [pumpQueue, updateTask]);
 
-  // Throttled Real-time transfer progress buffer (flushes every 120ms)
+  // Throttled Real-time transfer progress buffer (flushes every 150ms)
   const progressBuffer = useRef<Map<string, any>>(new Map());
 
   useEffect(() => {
@@ -604,23 +629,22 @@ export const App: React.FC = () => {
 
       const current = transfersRef.current;
       let changed = false;
-      let nextList = current.slice();
 
       updates.forEach((upd, id) => {
         let idx = taskIndexMap.current.get(id);
-        if (idx === undefined || idx >= nextList.length || nextList[idx]?.id !== id) {
-          idx = nextList.findIndex((t) => t.id === id);
+        if (idx === undefined || idx >= current.length || current[idx]?.id !== id) {
+          idx = current.findIndex((t) => t.id === id);
           if (idx !== -1) {
             taskIndexMap.current.set(id, idx);
           }
         }
 
-        if (idx !== -1 && idx < nextList.length) {
-          const currentItem = nextList[idx];
+        if (idx !== -1 && idx < current.length) {
+          const currentItem = current[idx];
           // CRITICAL: NEVER touch tasks that are completed, error, or cancelled!
           if (currentItem.status === 'in_progress') {
             changed = true;
-            nextList[idx] = {
+            current[idx] = {
               ...currentItem,
               transferredBytes: upd.transferredBytes,
               totalBytes: upd.totalBytes,
@@ -633,16 +657,15 @@ export const App: React.FC = () => {
       });
 
       if (changed) {
-        transfersRef.current = nextList;
-        setTransfers(nextList);
+        scheduleTransfersStateUpdate();
       }
-    }, 120);
+    }, 150);
 
     return () => {
       unsubProgress();
       clearInterval(interval);
     };
-  }, []);
+  }, [scheduleTransfersStateUpdate]);
 
   // Edit-in-Place Watcher
   const [watcherEvent, setWatcherEvent] = useState<WatcherEvent | null>(null);
@@ -1021,25 +1044,31 @@ export const App: React.FC = () => {
 
       // Electron Desktop Mode:
       const folderPath = folderPaths[0];
+      const folderBaseName = folderPath.split(/[/\\]/).filter(Boolean).pop() || 'folder';
+      showDownloadToast('Сканирование...', `Анализ папки "${folderBaseName}"`);
+
       const scannedFiles = await window.electronAPI.s3.scanLocalPath(folderPath);
       if (!scannedFiles || scannedFiles.length === 0) {
         alert('Выбранная папка пуста');
         return;
       }
 
-      const folderBaseName = folderPath.split(/[/\\]/).filter(Boolean).pop() || 'folder';
-      const newTasks: TransferProgress[] = scannedFiles.map((file) => ({
-        id: `up_f_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
-        type: 'upload',
-        bucket: selectedBucket,
-        key: `${currentPrefix}${folderBaseName}/${file.relativePath}`,
-        localPath: file.localPath,
-        totalBytes: file.size,
-        transferredBytes: 0,
-        progress: 0,
-        speed: '',
-        status: 'queued',
-      }));
+      const newTasks: TransferProgress[] = scannedFiles.map((file) => {
+        const cleanRel = file.relativePath.replace(/\\/g, '/').replace(/^\/+/, '');
+        const key = currentPrefix ? `${currentPrefix}${cleanRel}` : cleanRel;
+        return {
+          id: `up_f_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+          type: 'upload',
+          bucket: selectedBucket,
+          key,
+          localPath: file.localPath,
+          totalBytes: file.size,
+          transferredBytes: 0,
+          progress: 0,
+          speed: '',
+          status: 'queued',
+        };
+      });
 
       prepareForNewTransfers();
       addTransfers(newTasks);
@@ -1055,8 +1084,8 @@ export const App: React.FC = () => {
     try {
       const newTasks: TransferProgress[] = [];
 
-      for (const filePath of filePaths) {
-        if (!isElectronApp) {
+      if (!isElectronApp) {
+        for (const filePath of filePaths) {
           const file = (window.electronAPI as any).getBrowserFile
             ? (window.electronAPI as any).getBrowserFile(filePath)
             : null;
@@ -1074,11 +1103,17 @@ export const App: React.FC = () => {
             speed: '',
             status: 'queued',
           });
-          continue;
+        }
+      } else {
+        if (filePaths.length > 1) {
+          showDownloadToast('Сканирование...', `Подготовка ${filePaths.length} элементов к загрузке`);
         }
 
-        const scanned = await window.electronAPI.s3.scanLocalPath(filePath);
-        for (const file of scanned) {
+        const scannedFiles = window.electronAPI.s3.scanLocalPaths
+          ? await window.electronAPI.s3.scanLocalPaths(filePaths)
+          : (await Promise.all(filePaths.map((fp) => window.electronAPI.s3.scanLocalPath(fp)))).flat();
+
+        for (const file of scannedFiles) {
           const rel = (file.relativePath || file.localPath.split(/[/\\]/).pop() || 'file')
             .replace(/\\/g, '/')
             .replace(/^\/+/, '');
@@ -1414,10 +1449,11 @@ export const App: React.FC = () => {
         : t
     );
     transfersRef.current = next;
-    setTransfers(next);
+    scheduleTransfersStateUpdate(true);
   };
 
   const handleResumeTransfer = (id: string) => {
+    nextQueueIndexRef.current = 0;
     updateTask(id, (t) => ({
       ...t,
       status: 'queued',
@@ -1431,6 +1467,7 @@ export const App: React.FC = () => {
   };
 
   const handleStartAll = () => {
+    nextQueueIndexRef.current = 0;
     const next = transfersRef.current.map((t) =>
       t.status === 'cancelled' || t.status === 'error'
         ? {
@@ -1445,13 +1482,14 @@ export const App: React.FC = () => {
         : t
     );
     transfersRef.current = next;
-    setTransfers(next);
+    scheduleTransfersStateUpdate(true);
     setTimeout(pumpQueue, 0);
   };
 
   const handleRestartAll = () => {
     activeTaskIds.current.clear();
     activeTaskStartTimes.current.clear();
+    nextQueueIndexRef.current = 0;
     const next = transfersRef.current.map((t) => ({
       ...t,
       status: 'queued' as const,
@@ -1462,7 +1500,7 @@ export const App: React.FC = () => {
       speedBytesPerSec: 0,
     }));
     transfersRef.current = next;
-    setTransfers(next);
+    scheduleTransfersStateUpdate(true);
     setTimeout(pumpQueue, 0);
   };
 
@@ -1470,8 +1508,9 @@ export const App: React.FC = () => {
     const next = transfersRef.current.filter((t) => t.status !== 'completed');
     taskIndexMap.current.clear();
     next.forEach((t, i) => taskIndexMap.current.set(t.id, i));
+    nextQueueIndexRef.current = 0;
     transfersRef.current = next;
-    setTransfers(next);
+    scheduleTransfersStateUpdate(true);
   };
 
   const handleChangeConcurrency = (threads: number) => {

@@ -119,6 +119,8 @@ export const electronAPI = {
       ipcRenderer.invoke('s3:saveTextContent', profile, bucket, key, content),
     scanLocalPath: (localPath: string): Promise<ScannedFile[]> =>
       ipcRenderer.invoke('s3:scanLocalPath', localPath),
+    scanLocalPaths: (localPaths: string[]): Promise<ScannedFile[]> =>
+      ipcRenderer.invoke('s3:scanLocalPaths', localPaths),
     downloadDirectory: (
       profile: S3Profile,
       bucket: string,

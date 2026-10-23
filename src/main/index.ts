@@ -258,8 +258,11 @@ app.whenReady().then(() => {
       let lastEmitTime = 0;
 
       return await s3Service.uploadFile(profile, bucket, key, localFilePath, (transferred, total) => {
+        // Avoid IPC flooding for small files (<= 512KB) which complete in milliseconds
+        if (total <= 512 * 1024) return;
+
         const now = Date.now();
-        if (now - lastEmitTime >= 150 || transferred >= total) {
+        if (now - lastEmitTime >= 180 || transferred >= total) {
           const timeDiff = Math.max(0.001, (now - lastTime) / 1000);
           const bytesDiff = Math.max(0, transferred - lastBytes);
           const speedBytesPerSec = bytesDiff / timeDiff;
@@ -474,7 +477,14 @@ app.whenReady().then(() => {
   ipcMain.handle(
     's3:scanLocalPath',
     async (_event, localPath: string) => {
-      return s3Service.scanLocalPath(localPath);
+      return await s3Service.scanLocalPath(localPath);
+    }
+  );
+
+  ipcMain.handle(
+    's3:scanLocalPaths',
+    async (_event, localPaths: string[]) => {
+      return await s3Service.scanLocalPaths(localPaths);
     }
   );
 

@@ -28,7 +28,7 @@ import { PdfViewerModal } from './components/PdfViewerModal';
 import { ImageGalleryModal } from './components/ImageGalleryModal';
 import { MinioAdminDashboard } from './components/MinioAdminDashboard';
 import { WebPinModal } from './components/WebPinModal';
-import { useConfirm } from './context/ConfirmContext';
+import { useConfirm, useAlert } from './context/ConfirmContext';
 import { useTranslation } from './context/LanguageContext';
 import { formatSpeed, formatBytes } from './utils/formatters';
 import {
@@ -59,6 +59,7 @@ const DEFAULT_PERMISSIONS: UserPermissions = {
 
 export const App: React.FC = () => {
   const confirm = useConfirm();
+  const showAlert = useAlert();
   const { t } = useTranslation();
 
   // Settings & Theme
@@ -831,12 +832,13 @@ export const App: React.FC = () => {
       });
       setNextContinuationToken(res.isTruncated ? res.nextContinuationToken : undefined);
       setIsServerAvailable(true);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to load more objects:', err);
+      await showAlert(`${t('common.error')}: ${err.message}`);
     } finally {
       setLoadingMoreItems(false);
     }
-  }, [activeProfile, selectedBucket, currentPrefix, nextContinuationToken, loadingMoreItems]);
+  }, [activeProfile, selectedBucket, currentPrefix, nextContinuationToken, loadingMoreItems, showAlert, t]);
 
   loadObjectsRef.current = loadObjects;
 
@@ -893,8 +895,7 @@ export const App: React.FC = () => {
       setActiveProfile(profile);
       return true;
     } else {
-      alert(res.error || 'Ошибка сохранения профиля');
-      return false;
+      throw new Error(res.error || 'Ошибка сохранения профиля');
     }
   };
 
@@ -919,7 +920,7 @@ export const App: React.FC = () => {
       return true;
     } catch (err: any) {
       console.error('Failed to delete profile:', err);
-      alert(`${t('common.error')}: ${err.message}`);
+      await showAlert(`${t('common.error')}: ${err.message}`);
       return false;
     }
   };
@@ -993,9 +994,9 @@ export const App: React.FC = () => {
     } catch (err: any) {
       if (isAccessDeniedError(err)) {
         setPermissions((p) => ({ ...p, canDeleteBucket: false }));
-        alert('Отказано в доступе: у вас нет прав на удаление бакетов.');
+        await showAlert('Отказано в доступе: у вас нет прав на удаление бакетов.');
       } else {
-        alert(`${t('common.error')}: ${err.message}`);
+        await showAlert(`${t('common.error')}: ${err.message}`);
       }
       return false;
     }
@@ -1053,9 +1054,9 @@ export const App: React.FC = () => {
     } catch (err: any) {
       if (isAccessDeniedError(err)) {
         setPermissions((p) => ({ ...p, canDeleteItems: false }));
-        alert('Отказано в доступе: у вас нет прав на удаление объектов.');
+        await showAlert('Отказано в доступе: у вас нет прав на удаление объектов.');
       } else {
-        alert(`${t('common.error')}: ${err.message}`);
+        await showAlert(`${t('common.error')}: ${err.message}`);
       }
     }
   };
@@ -1118,7 +1119,11 @@ export const App: React.FC = () => {
 
       const scannedFiles = await window.electronAPI.s3.scanLocalPath(folderPath);
       if (!scannedFiles || scannedFiles.length === 0) {
-        alert('Выбранная папка пуста');
+        await showAlert({
+          title: t('common.warning'),
+          message: 'Выбранная папка пуста',
+          variant: 'warning',
+        });
         return;
       }
 
@@ -1143,7 +1148,7 @@ export const App: React.FC = () => {
       addTransfers(newTasks);
       showDownloadToast('Загрузка запущена', `Папка "${folderBaseName}"`, `Файлов: ${newTasks.length}`);
     } catch (err: any) {
-      alert(`Ошибка при выборе папки: ${err.message}`);
+      await showAlert(`Ошибка при выборе папки: ${err.message}`);
     }
   };
 
@@ -1209,7 +1214,7 @@ export const App: React.FC = () => {
       }
     } catch (err: any) {
       console.error('Failed to process dropped files:', err);
-      alert(`Ошибка добавления файлов: ${err.message}`);
+      await showAlert(`Ошибка добавления файлов: ${err.message}`);
     }
   };
 
@@ -1346,7 +1351,7 @@ export const App: React.FC = () => {
           item.key
         );
       } catch (err: any) {
-        alert(`Ошибка получения содержимого папки: ${err.message}`);
+        await showAlert(`Ошибка получения содержимого папки: ${err.message}`);
         setDiscoveryState((prev) => ({ ...prev, isActive: false }));
       }
       return;
@@ -1495,6 +1500,7 @@ export const App: React.FC = () => {
           );
         } catch (err: any) {
           console.error('Failed to stream folder discovery:', item.key, err);
+          await showAlert(`Ошибка получения содержимого папки "${folderName}": ${err.message}`);
         }
       }
 
@@ -1602,10 +1608,10 @@ export const App: React.FC = () => {
         isProActive // Pro feature: auto-watch for changes!
       );
       if (!res.success && res.error) {
-        alert(`Не удалось открыть файл: ${res.error}`);
+        await showAlert(`Не удалось открыть файл: ${res.error}`);
       }
     } catch (err: any) {
-      alert(`Ошибка открытия файла: ${err.message}`);
+      await showAlert(`Ошибка открытия файла: ${err.message}`);
     }
   };
 
@@ -1619,7 +1625,7 @@ export const App: React.FC = () => {
         await loadObjects();
       }
     } catch (err: any) {
-      alert(`Ошибка сохранения в S3: ${err.message}`);
+      await showAlert(`Ошибка сохранения в S3: ${err.message}`);
     } finally {
       setIsSavingWatcher(false);
     }

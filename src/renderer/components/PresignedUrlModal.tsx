@@ -22,6 +22,7 @@ export const PresignedUrlModal: React.FC<PresignedUrlModalProps> = ({
   const [expiresIn, setExpiresIn] = useState<number>(3600);
   const [url, setUrl] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState<boolean>(false);
 
   useEffect(() => {
@@ -30,15 +31,28 @@ export const PresignedUrlModal: React.FC<PresignedUrlModalProps> = ({
     }
   }, [isOpen, expiresIn, profile, bucket, itemKey]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const generateUrl = async (seconds: number) => {
     try {
       setLoading(true);
+      setError(null);
       const res = await window.electronAPI.s3.getPresignedUrl(profile, bucket, itemKey, seconds);
       setUrl(res);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Failed to generate presigned url:', err);
+      setError(err.message || t('common.failed'));
     } finally {
       setLoading(false);
     }
@@ -81,6 +95,12 @@ export const PresignedUrlModal: React.FC<PresignedUrlModalProps> = ({
         </div>
 
         <div className="p-5 space-y-4">
+          {error && (
+            <div className="p-2.5 bg-destructive/10 border border-destructive/20 rounded-md text-destructive text-xs">
+              {error}
+            </div>
+          )}
+
           <div>
             <label className="block text-xs font-medium text-foreground mb-1.5">{t('common.file')} S3</label>
             <div className="text-xs font-mono text-muted-foreground bg-background px-3 py-1.5 rounded-md border border-border truncate">

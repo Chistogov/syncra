@@ -72,6 +72,17 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
     setError(null);
   }, [initialProfile, isOpen, isElectron, allowedUrls]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !isSaving && !testing) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, isSaving, testing, onClose]);
+
   if (!isOpen) return null;
 
   const currentProfileData: S3Profile = {
@@ -148,10 +159,15 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
     setIsSaving(true);
     setError(null);
-    const success = await onSave(currentProfileData);
-    setIsSaving(false);
-    if (success) {
-      onClose();
+    try {
+      const success = await onSave(currentProfileData);
+      if (success) {
+        onClose();
+      }
+    } catch (err: any) {
+      setError(err.message || 'Ошибка сохранения профиля');
+    } finally {
+      setIsSaving(false);
     }
   };
 

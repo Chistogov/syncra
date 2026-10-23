@@ -47,6 +47,7 @@ export const translations = {
     'common.objects': 'объектов',
     'common.copiedToClipboard': 'Скопировано в буфер обмена',
     'common.failed': 'Не удалось выполнить операцию',
+    'common.ok': 'Понятно',
 
     // Навигационная панель (Icon Rail)
     'nav.storage': 'Хранилище',
@@ -729,6 +730,7 @@ export const translations = {
     'common.objects': 'objects',
     'common.copiedToClipboard': 'Copied to clipboard',
     'common.failed': 'Operation failed',
+    'common.ok': 'OK',
 
     // Navigation Rail
     'nav.storage': 'Storage',

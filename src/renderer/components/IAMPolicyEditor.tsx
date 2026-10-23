@@ -20,6 +20,7 @@ import {
   FileCode,
 } from 'lucide-react';
 import { S3Bucket } from '../../common/types';
+import { useAlert } from '../context/ConfirmContext';
 
 export interface IAMPolicyEditorProps {
   value: string;
@@ -123,6 +124,7 @@ export const IAMPolicyEditor: React.FC<IAMPolicyEditorProps> = ({
   theme,
   readOnly = false,
 }) => {
+  const showAlert = useAlert();
   const [mode, setMode] = useState<'visual' | 'code'>('visual');
   const [parseError, setParseError] = useState<string | null>(null);
   const [collapsedCategories, setCollapsedCategories] = useState<Record<string, boolean>>({});
@@ -359,7 +361,11 @@ export const IAMPolicyEditor: React.FC<IAMPolicyEditorProps> = ({
   // Delete statement
   const handleDeleteStatement = (index: number) => {
     if (statements.length <= 1) {
-      alert('Политика должна содержать как минимум одно правило (Statement)');
+      showAlert({
+        title: 'Внимание',
+        message: 'Политика должна содержать как минимум одно правило (Statement)',
+        variant: 'warning',
+      });
       return;
     }
     setStatements((prev) => {
@@ -482,7 +488,11 @@ export const IAMPolicyEditor: React.FC<IAMPolicyEditorProps> = ({
     if (targetMode === 'visual') {
       const { statements: pList, error } = parseJsonToStatements(value);
       if (error) {
-        alert(`Невозможно переключить в интерактивный режим из-за синтаксической ошибки в JSON:\n\n${error}`);
+        showAlert({
+          title: 'Синтаксическая ошибка в JSON',
+          message: `Невозможно переключить в интерактивный режим из-за синтаксической ошибки в JSON:\n\n${error}`,
+          variant: 'destructive',
+        });
         return;
       }
       setStatements(pList);

@@ -69,7 +69,7 @@ import {
   formatCompactNumber,
   formatDate,
 } from '../utils/formatters';
-import { useConfirm } from '../context/ConfirmContext';
+import { useConfirm, useAlert } from '../context/ConfirmContext';
 
 const SYSTEM_POLICY_ORDER = ['readwrite', 'readonly', 'writeonly', 'diagnostics', 'consoleAdmin'];
 
@@ -167,6 +167,7 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
   const canManageRoles = permissions?.canManageRoles ?? true;
   const canManagePolicies = permissions?.canManagePolicies ?? true;
   const confirm = useConfirm();
+  const showAlert = useAlert();
   const [activeSubTab, setActiveSubTab] = useState<'metrics' | 'buckets' | 'users' | 'groups' | 'policies' | 'config'>('metrics');
   const [metricsSubTab, setMetricsSubTab] = useState<'info' | 'usage' | 'resources'>('info');
   const [loading, setLoading] = useState(false);
@@ -565,7 +566,7 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
       const res = await window.electronAPI.admin.setCompressionConfig(profile, compressionConfig);
       setSuccessMsg(res.message || 'Настройки сжатия успешно сохранены');
     } catch (err: any) {
-      alert(`Ошибка сохранения настроек сжатия: ${err.message}`);
+      await showAlert(`Ошибка сохранения настроек сжатия: ${err.message}`);
     } finally {
       setIsSavingConfig(false);
     }
@@ -587,7 +588,7 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
       setSuccessMsg('Настройки сжатия сброшены до значений по умолчанию');
       await loadCompressionConfig();
     } catch (err: any) {
-      alert(`Ошибка сброса настроек: ${err.message}`);
+      await showAlert(`Ошибка сброса настроек: ${err.message}`);
     } finally {
       setIsSavingConfig(false);
     }
@@ -606,7 +607,7 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
       URL.revokeObjectURL(url);
       setSuccessMsg('Конфигурация MinIO успешно экспортирована');
     } catch (err: any) {
-      alert(`Ошибка экспорта конфигурации: ${err.message}`);
+      await showAlert(`Ошибка экспорта конфигурации: ${err.message}`);
     }
   };
 
@@ -621,7 +622,7 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
         setSuccessMsg('Конфигурация MinIO успешно импортирована');
         loadCompressionConfig();
       } catch (err: any) {
-        alert(`Ошибка импорта конфигурации: ${err.message}`);
+        await showAlert(`Ошибка импорта конфигурации: ${err.message}`);
       }
     };
     reader.readAsText(file);
@@ -678,7 +679,7 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
       );
       setSuccessMsg(`Статус пользователя ${user.accessKey} изменён на "${nextStatus}"`);
     } catch (err: any) {
-      alert(`Ошибка изменения статуса: ${err.message}`);
+      await showAlert(`Ошибка изменения статуса: ${err.message}`);
     }
   };
 
@@ -697,7 +698,7 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
       setUsers((prev) => prev.filter((u) => u.accessKey !== accessKey));
       setSuccessMsg(`Пользователь ${accessKey} успешно удалён`);
     } catch (err: any) {
-      alert(`Ошибка удаления пользователя: ${err.message}`);
+      await showAlert(`Ошибка удаления пользователя: ${err.message}`);
     }
   };
 
@@ -717,7 +718,7 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
       setSuccessMsg(`Пользователь ${newAccessKey} успешно создан`);
       await loadUsers();
     } catch (err: any) {
-      alert(`Ошибка создания пользователя: ${err.message}`);
+      await showAlert(`Ошибка создания пользователя: ${err.message}`);
     }
   };
 
@@ -736,7 +737,7 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
       setChangePasswordVal('');
       setSuccessMsg(`Пароль пользователя ${editingPasswordUser} обновлен`);
     } catch (err: any) {
-      alert(`Ошибка смены пароля: ${err.message}`);
+      await showAlert(`Ошибка смены пароля: ${err.message}`);
     }
   };
 
@@ -778,7 +779,7 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
       );
       setSuccessMsg(`Статус группы "${group.name}" изменён на "${nextStatus}"`);
     } catch (err: any) {
-      alert(`Ошибка изменения статуса группы: ${err.message}`);
+      await showAlert(`Ошибка изменения статуса группы: ${err.message}`);
     }
   };
 
@@ -797,7 +798,7 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
       setSuccessMsg(`Группа "${groupName}" удалена`);
       await loadGroups();
     } catch (err: any) {
-      alert(`Ошибка удаления группы: ${err.message}`);
+      await showAlert(`Ошибка удаления группы: ${err.message}`);
     }
   };
 
@@ -805,7 +806,11 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
     e.preventDefault();
     if (!profile || !groupFormName.trim()) return;
     if (groupFormSelectedMembers.length === 0) {
-      alert('Необходимо выбрать как минимум одного пользователя для состава группы');
+      await showAlert({
+        title: 'Внимание',
+        message: 'Необходимо выбрать как минимум одного пользователя для состава группы',
+        variant: 'warning',
+      });
       return;
     }
 
@@ -822,7 +827,7 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
       setEditingGroupName(null);
       await loadGroups();
     } catch (err: any) {
-      alert(`Ошибка сохранения группы: ${err.message}`);
+      await showAlert(`Ошибка сохранения группы: ${err.message}`);
     } finally {
       setIsSavingGroup(false);
     }
@@ -839,7 +844,7 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
       setSuccessMsg(`Политика "${selectedPolicyName}" успешно сохранена`);
       policyDocsCacheRef.current[selectedPolicyName] = policyEditorContent;
     } catch (err: any) {
-      alert(`Ошибка сохранения политики: ${err.message}`);
+      await showAlert(`Ошибка сохранения политики: ${err.message}`);
     } finally {
       setIsSavingPolicy(false);
     }
@@ -848,7 +853,11 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
   const handleDeletePolicy = async (name: string) => {
     if (!profile) return;
     if (SYSTEM_POLICY_ORDER.includes(name)) {
-      alert('Встроенные системные политики MinIO нельзя удалить');
+      await showAlert({
+        title: 'Системная политика',
+        message: 'Встроенные системные политики MinIO нельзя удалить',
+        variant: 'warning',
+      });
       return;
     }
     const ok = await confirm({
@@ -869,7 +878,7 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
       }
       await loadPolicies();
     } catch (err: any) {
-      alert(`Ошибка удаления политики: ${err.message}`);
+      await showAlert(`Ошибка удаления политики: ${err.message}`);
     }
   };
 
@@ -887,7 +896,7 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
       setSuccessMsg(`Политика "${trimmedName}" успешно создана`);
       await loadPolicies(trimmedName);
     } catch (err: any) {
-      alert(`Ошибка создания политики: ${err.message}`);
+      await showAlert(`Ошибка создания политики: ${err.message}`);
     }
   };
 
@@ -902,7 +911,7 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
         `Версионирование бакета "${selectedBucketName}" ${shouldEnable ? 'включено' : 'приостановлено'}`
       );
     } catch (err: any) {
-      alert(`Ошибка изменения версионирования: ${err.message}`);
+      await showAlert(`Ошибка изменения версионирования: ${err.message}`);
     }
   };
 
@@ -919,7 +928,7 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
         setSuccessMsg(`Политика бакета "${selectedBucketName}" обновлена`);
       }
     } catch (err: any) {
-      alert(`Ошибка сохранения политики бакета: ${err.message}`);
+      await showAlert(`Ошибка сохранения политики бакета: ${err.message}`);
     } finally {
       setIsSavingBucketPolicy(false);
     }

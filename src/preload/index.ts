@@ -1,6 +1,7 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron';
 import {
   S3Profile,
+  S3Item,
   WatcherEvent,
   TestConnectionResult,
   ListObjectsResult,
@@ -65,6 +66,8 @@ export const electronAPI = {
       continuationToken?: string
     ): Promise<ListObjectsResult> =>
       ipcRenderer.invoke('s3:listObjects', profile, bucket, prefix, continuationToken),
+    headObject: (profile: S3Profile, bucket: string, key: string): Promise<S3Item | null> =>
+      ipcRenderer.invoke('s3:headObject', profile, bucket, key),
     createFolder: (profile: S3Profile, bucket: string, folderKey: string): Promise<boolean> =>
       ipcRenderer.invoke('s3:createFolder', profile, bucket, folderKey),
     deleteObjects: (profile: S3Profile, bucket: string, keys: string[]): Promise<boolean> =>

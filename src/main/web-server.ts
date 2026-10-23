@@ -581,6 +581,12 @@ export class WebServerService {
         return this.sendJson(res, 200, list);
       }
 
+      if (pathname === '/api/s3/headObject' && method === 'POST') {
+        const { profile, bucket, key } = await this.parseJsonBody(req);
+        const item = await this.s3Service.headObject(profile, bucket, key);
+        return this.sendJson(res, 200, item);
+      }
+
       if (pathname === '/api/s3/createBucket' && method === 'POST') {
         const { profile, bucketName } = await this.parseJsonBody(req);
         const ok = await this.s3Service.createBucket(profile, bucketName);

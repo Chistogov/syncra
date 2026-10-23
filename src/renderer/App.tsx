@@ -1585,6 +1585,75 @@ export const App: React.FC = () => {
     setPreviewItem(item);
   };
 
+  // Handle path entered into Breadcrumbs address bar
+  const handleApplyNavigationPath = async (inputPath: string) => {
+    if (!activeProfile) return;
+    const raw = inputPath.trim();
+    if (!raw) {
+      setCurrentPrefix('');
+      return;
+    }
+
+    const clean = raw.replace(/^s3:\/\//i, '').replace(/^\/+/, '');
+    if (!clean) {
+      setCurrentPrefix('');
+      return;
+    }
+
+    const segments = clean.split('/').filter(Boolean);
+    if (segments.length === 0) {
+      setCurrentPrefix('');
+      return;
+    }
+
+    const firstSegment = segments[0];
+    const isFirstSegmentBucket =
+      firstSegment === selectedBucket || buckets.some((b) => b.name === firstSegment);
+
+    let targetBucket = selectedBucket;
+    let targetKey = '';
+
+    if (isFirstSegmentBucket) {
+      targetBucket = firstSegment;
+      targetKey = segments.slice(1).join('/');
+    } else {
+      targetKey = segments.join('/');
+    }
+
+    const isExplicitFolder = raw.endsWith('/');
+
+    if (!isExplicitFolder && targetKey) {
+      try {
+        const fileItem = await window.electronAPI.s3.headObject(
+          activeProfile,
+          targetBucket,
+          targetKey
+        );
+        if (fileItem && !fileItem.isPrefix) {
+          // It's an existing file! Open its containing parent folder and show its preview drawer
+          const lastSlash = targetKey.lastIndexOf('/');
+          const parentPrefix = lastSlash >= 0 ? targetKey.substring(0, lastSlash + 1) : '';
+
+          if (targetBucket !== selectedBucket) {
+            setSelectedBucket(targetBucket);
+          }
+          setCurrentPrefix(parentPrefix);
+          setPreviewItem(fileItem);
+          return;
+        }
+      } catch (err) {
+        console.warn('headObject failed, navigating as folder:', err);
+      }
+    }
+
+    // It's a folder or does not exist as a file: navigate as folder
+    const folderPrefix = targetKey ? (targetKey.endsWith('/') ? targetKey : `${targetKey}/`) : '';
+    if (targetBucket !== selectedBucket) {
+      setSelectedBucket(targetBucket);
+    }
+    setCurrentPrefix(folderPrefix);
+  };
+
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background text-foreground">
       {/* 1. Left Vertical Icon Rail (Plane.so) */}
@@ -1666,6 +1735,7 @@ export const App: React.FC = () => {
               prefix={currentPrefix}
               buckets={buckets}
               onNavigate={(newPrefix) => setCurrentPrefix(newPrefix)}
+              onApplyPath={handleApplyNavigationPath}
               onSelectBucket={(b) => {
                 setSelectedBucket(b);
                 setCurrentPrefix('');

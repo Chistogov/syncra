@@ -179,6 +179,13 @@ app.whenReady().then(() => {
   );
 
   ipcMain.handle(
+    's3:headObject',
+    async (_event, profile: S3Profile, bucket: string, key: string) => {
+      return await s3Service.headObject(profile, bucket, key);
+    }
+  );
+
+  ipcMain.handle(
     's3:createFolder',
     async (_event, profile: S3Profile, bucket: string, folderKey: string) => {
       return await s3Service.createFolder(profile, bucket, folderKey);

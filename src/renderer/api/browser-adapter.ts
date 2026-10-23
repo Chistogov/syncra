@@ -1,6 +1,7 @@
 import {
   S3Profile,
   S3Bucket,
+  S3Item,
   ListObjectsResult,
   FilePreviewData,
   ScannedFile,
@@ -228,6 +229,17 @@ export function initBrowserElectronAPI() {
           bucket,
           prefix,
           continuationToken,
+        });
+      },
+      headObject: async (
+        profile: S3Profile,
+        bucket: string,
+        key: string
+      ): Promise<S3Item | null> => {
+        return await apiFetch<S3Item | null>('/api/s3/headObject', {
+          profile,
+          bucket,
+          key,
         });
       },
       createFolder: async (profile: S3Profile, bucket: string, folderKey: string): Promise<boolean> => {

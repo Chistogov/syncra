@@ -417,6 +417,31 @@ export class S3Service {
     };
   }
 
+  public async headObject(
+    profile: S3Profile,
+    bucket: string,
+    key: string
+  ): Promise<S3Item | null> {
+    try {
+      const client = this.getClient(profile);
+      const res = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
+      const name = key.split('/').filter(Boolean).pop() || key;
+      const ext = path.extname(name).toLowerCase().replace('.', '');
+      return {
+        key,
+        name,
+        isPrefix: false,
+        size: res.ContentLength || 0,
+        lastModified: res.LastModified?.toISOString() || new Date().toISOString(),
+        eTag: res.ETag?.replace(/"/g, ''),
+        storageClass: res.StorageClass || 'STANDARD',
+        extension: ext,
+      };
+    } catch {
+      return null;
+    }
+  }
+
   public async createFolder(profile: S3Profile, bucket: string, folderKey: string): Promise<boolean> {
     const client = this.getClient(profile);
     const key = folderKey.endsWith('/') ? folderKey : `${folderKey}/`;

@@ -19,6 +19,7 @@ interface BreadcrumbsProps {
   prefix: string;
   buckets?: S3Bucket[];
   onNavigate: (newPrefix: string) => void;
+  onApplyPath?: (inputPath: string) => Promise<void> | void;
   onSelectBucket?: (bucketName: string) => void;
   onRootClick: () => void;
   onOpenMobileSidebar?: () => void;
@@ -29,6 +30,7 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
   prefix,
   buckets = [],
   onNavigate,
+  onApplyPath,
   onSelectBucket,
   onRootClick,
   onOpenMobileSidebar,
@@ -77,9 +79,15 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
     setIsEditing(true);
   };
 
-  const handleApplyPath = () => {
+  const handleApplyPath = async () => {
     setIsEditing(false);
-    let clean = inputValue.trim().replace(/^s3:\/\//i, '').replace(/^\/+/, '');
+    const raw = inputValue.trim();
+    if (onApplyPath) {
+      await onApplyPath(raw);
+      return;
+    }
+
+    let clean = raw.replace(/^s3:\/\//i, '').replace(/^\/+/, '');
 
     if (!clean) {
       onNavigate('');

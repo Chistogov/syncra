@@ -205,6 +205,18 @@ export function initBrowserElectronAPI() {
         const res = await apiFetch<{ success: boolean }>('/api/s3/deleteBucket', { profile, bucketName });
         return res.success;
       },
+      renameBucket: async (
+        profile: S3Profile,
+        oldBucketName: string,
+        newBucketName: string
+      ): Promise<boolean> => {
+        const res = await apiFetch<{ success: boolean }>('/api/s3/renameBucket', {
+          profile,
+          oldBucketName,
+          newBucketName,
+        });
+        return res.success;
+      },
       listObjects: async (
         profile: S3Profile,
         bucket: string,

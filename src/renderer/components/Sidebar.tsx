@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { S3Profile, S3Bucket, LicenseStatus } from '../../common/types';
 import { useTranslation } from '../context/LanguageContext';
+import { BucketContextMenu } from './BucketContextMenu';
 
 interface SidebarProps {
   profiles: S3Profile[];
@@ -30,6 +31,7 @@ interface SidebarProps {
   onRefreshBuckets: () => void;
   onOpenCreateBucketModal: () => void;
   onDeleteBucket: (bucketName: string) => void;
+  onRenameBucket?: (bucket: S3Bucket) => void;
   isProActive: boolean;
   licenseStatus?: LicenseStatus | null;
   onOpenProModal: () => void;
@@ -54,6 +56,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onRefreshBuckets,
   onOpenCreateBucketModal,
   onDeleteBucket,
+  onRenameBucket,
   isProActive,
   licenseStatus,
   onOpenProModal,
@@ -67,6 +70,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { t } = useTranslation();
   const [bucketSearch, setBucketSearch] = useState('');
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{
+    bucket: S3Bucket | null;
+    position: { x: number; y: number };
+  } | null>(null);
+
+  const handleBucketContextMenu = (e: React.MouseEvent, bucket: S3Bucket) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({
+      bucket,
+      position: { x: e.clientX, y: e.clientY },
+    });
+  };
+
+  const handleAreaContextMenu = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement | null;
+    if (target?.closest('input, textarea, button, a')) {
+      return;
+    }
+    e.preventDefault();
+    setContextMenu({
+      bucket: null,
+      position: { x: e.clientX, y: e.clientY },
+    });
+  };
 
   const filteredBuckets = buckets.filter((b) =>
     b.name.toLowerCase().includes(bucketSearch.toLowerCase())
@@ -247,7 +275,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
       {/* Buckets Section Header */}
-      <div className="px-3 pt-3 pb-1 flex items-center justify-between text-muted-foreground">
+      <div
+        onContextMenu={handleAreaContextMenu}
+        className="px-3 pt-3 pb-1 flex items-center justify-between text-muted-foreground select-none"
+      >
         <span className="text-[11px] font-medium uppercase tracking-wider">
           {t('sidebar.buckets')} ({buckets.length})
         </span>
@@ -287,7 +318,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Buckets List */}
-      <div className="flex-1 overflow-y-auto px-2 py-1 space-y-0.5">
+      <div
+        onContextMenu={handleAreaContextMenu}
+        className="flex-1 overflow-y-auto px-2 py-1 space-y-0.5"
+      >
         {filteredBuckets.length === 0 ? (
           <div className="p-6 text-center text-xs text-muted-foreground">
             {!isServerAvailable ? (
@@ -313,6 +347,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   onSelectBucket(bucket.name);
                   onCloseMobile?.();
                 }}
+                onContextMenu={(e) => handleBucketContextMenu(e, bucket)}
                 className={`group flex items-center justify-between px-2.5 py-1.5 rounded-md text-xs cursor-pointer transition-colors ${
                   isSelected
                     ? 'bg-accent text-accent-foreground font-medium'
@@ -383,6 +418,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
         })()}
       </div>
       </aside>
+
+      {/* Bucket Context Menu (for bucket items & buckets area background) */}
+      <BucketContextMenu
+        isOpen={Boolean(contextMenu)}
+        position={contextMenu?.position || null}
+        bucket={contextMenu?.bucket || null}
+        onClose={() => setContextMenu(null)}
+        onRenameBucket={onRenameBucket}
+        onDeleteBucket={onDeleteBucket}
+        onCreateBucket={onOpenCreateBucketModal}
+        onRefreshBuckets={onRefreshBuckets}
+        canCreateBucket={canCreateBucket}
+        canDeleteBucket={canDeleteBucket}
+      />
     </>
   );
 };

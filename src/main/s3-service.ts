@@ -132,6 +132,65 @@ export class S3Service {
     return true;
   }
 
+  public async renameBucket(
+    profile: S3Profile,
+    oldBucketName: string,
+    newBucketName: string
+  ): Promise<boolean> {
+    if (oldBucketName === newBucketName) return true;
+    const client = this.getClient(profile);
+
+    // 1. Create the new bucket
+    await client.send(new CreateBucketCommand({ Bucket: newBucketName }));
+
+    try {
+      // 2. Migrate all objects from oldBucket to newBucket
+      let continuationToken: string | undefined = undefined;
+      do {
+        const listRes: ListObjectsV2CommandOutput = await client.send(
+          new ListObjectsV2Command({
+            Bucket: oldBucketName,
+            ContinuationToken: continuationToken,
+          })
+        );
+
+        if (listRes.Contents && listRes.Contents.length > 0) {
+          const keysToDelete: { Key: string }[] = [];
+          for (const obj of listRes.Contents) {
+            if (!obj.Key) continue;
+            const copySource = `${oldBucketName}/${encodeURIComponent(obj.Key).replace(/%2F/g, '/')}`;
+            await client.send(
+              new CopyObjectCommand({
+                Bucket: newBucketName,
+                Key: obj.Key,
+                CopySource: copySource,
+              })
+            );
+            keysToDelete.push({ Key: obj.Key });
+          }
+
+          for (let i = 0; i < keysToDelete.length; i += 1000) {
+            const batch = keysToDelete.slice(i, i + 1000);
+            await client.send(
+              new DeleteObjectsCommand({
+                Bucket: oldBucketName,
+                Delete: { Objects: batch, Quiet: true },
+              })
+            );
+          }
+        }
+
+        continuationToken = listRes.IsTruncated ? listRes.NextContinuationToken : undefined;
+      } while (continuationToken);
+
+      // 3. Delete the old bucket
+      await client.send(new DeleteBucketCommand({ Bucket: oldBucketName }));
+      return true;
+    } catch (err: any) {
+      throw new Error(`Ошибка при переносе объектов бакета: ${err.message || err}`);
+    }
+  }
+
   public async getBucketPolicy(profile: S3Profile, bucket: string): Promise<string | null> {
     try {
       const client = this.getClient(profile);

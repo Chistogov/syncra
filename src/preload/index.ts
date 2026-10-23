@@ -52,6 +52,12 @@ export const electronAPI = {
       ipcRenderer.invoke('s3:createBucket', profile, bucketName),
     deleteBucket: (profile: S3Profile, bucketName: string): Promise<boolean> =>
       ipcRenderer.invoke('s3:deleteBucket', profile, bucketName),
+    renameBucket: (
+      profile: S3Profile,
+      oldBucketName: string,
+      newBucketName: string
+    ): Promise<boolean> =>
+      ipcRenderer.invoke('s3:renameBucket', profile, oldBucketName, newBucketName),
     listObjects: (
       profile: S3Profile,
       bucket: string,

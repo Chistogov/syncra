@@ -165,6 +165,13 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle(
+    's3:renameBucket',
+    async (_event, profile: S3Profile, oldBucketName: string, newBucketName: string) => {
+      return await s3Service.renameBucket(profile, oldBucketName, newBucketName);
+    }
+  );
+
+  ipcMain.handle(
     's3:listObjects',
     async (_event, profile: S3Profile, bucket: string, prefix?: string, token?: string) => {
       return await s3Service.listObjects(profile, bucket, prefix, token);

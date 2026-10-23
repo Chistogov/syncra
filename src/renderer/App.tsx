@@ -15,6 +15,7 @@ import { Breadcrumbs } from './components/Breadcrumbs';
 import { ObjectBrowser } from './components/ObjectBrowser';
 import { ProfileModal } from './components/ProfileModal';
 import { CreateBucketModal } from './components/CreateBucketModal';
+import { RenameBucketModal } from './components/RenameBucketModal';
 import { CreateFolderModal } from './components/CreateFolderModal';
 import { PresignedUrlModal } from './components/PresignedUrlModal';
 import { PreviewDrawer } from './components/PreviewDrawer';
@@ -233,6 +234,7 @@ export const App: React.FC = () => {
 
   // Modals
   const [isCreateBucketOpen, setIsCreateBucketOpen] = useState(false);
+  const [renamingBucket, setRenamingBucket] = useState<S3Bucket | null>(null);
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false);
   const [presignedItem, setPresignedItem] = useState<S3Item | null>(null);
   const [previewItem, setPreviewItem] = useState<S3Item | null>(null);
@@ -911,6 +913,16 @@ export const App: React.FC = () => {
       } else {
         alert(`Ошибка создания бакета: ${err.message}`);
       }
+    }
+  };
+
+  const handleRenameBucket = async (oldBucketName: string, newBucketName: string) => {
+    if (!activeProfile) throw new Error('Нет активного профиля подключения');
+    await window.electronAPI.s3.renameBucket(activeProfile, oldBucketName, newBucketName);
+    await loadBuckets(activeProfile);
+    if (selectedBucket === oldBucketName) {
+      setSelectedBucket(newBucketName);
+      setCurrentPrefix('');
     }
   };
 
@@ -1634,6 +1646,7 @@ export const App: React.FC = () => {
             onRefreshBuckets={() => activeProfile && loadBuckets(activeProfile)}
             onOpenCreateBucketModal={() => setIsCreateBucketOpen(true)}
             onDeleteBucket={handleDeleteBucket}
+            onRenameBucket={(b) => setRenamingBucket(b)}
             isProActive={isProActive}
             licenseStatus={licenseStatus}
             onOpenProModal={() => setIsProModalOpen(true)}
@@ -1829,6 +1842,13 @@ export const App: React.FC = () => {
         isOpen={isCreateBucketOpen}
         onClose={() => setIsCreateBucketOpen(false)}
         onCreate={handleCreateBucket}
+      />
+
+      <RenameBucketModal
+        isOpen={Boolean(renamingBucket)}
+        bucket={renamingBucket}
+        onClose={() => setRenamingBucket(null)}
+        onRename={handleRenameBucket}
       />
 
       <ProfileModal

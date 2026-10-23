@@ -593,6 +593,12 @@ export class WebServerService {
         return this.sendJson(res, 200, { success: ok });
       }
 
+      if (pathname === '/api/s3/renameBucket' && method === 'POST') {
+        const { profile, oldBucketName, newBucketName } = await this.parseJsonBody(req);
+        const ok = await this.s3Service.renameBucket(profile, oldBucketName, newBucketName);
+        return this.sendJson(res, 200, { success: ok });
+      }
+
       if (pathname === '/api/s3/createFolder' && method === 'POST') {
         const { profile, bucket, folderKey } = await this.parseJsonBody(req);
         const ok = await this.s3Service.createFolder(profile, bucket, folderKey);

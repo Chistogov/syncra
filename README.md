@@ -1,101 +1,178 @@
-# Syncra — Modern S3 & MinIO Desktop Explorer
+<div align="center">
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.0.0-emerald.svg)](https://github.com/Chistogov/syncra/releases)
-[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-indigo.svg)](https://github.com/Chistogov/syncra/releases)
-[![Electron](https://img.shields.io/badge/Electron-33-cyan.svg)](https://www.electronjs.org/)
+# ⚡ Syncra — Modern S3 & MinIO Desktop Client
 
-**Syncra** is a fast, elegant, and cross-platform desktop client for **MinIO**, **AWS S3**, **Ceph**, **Yandex Object Storage**, **Wasabi**, and all S3-compatible cloud storages.
+**The next-generation GUI client for MinIO, AWS S3, Ceph, Yandex Object Storage, and all S3-compatible storages.**  
+*A fast, keyboard-driven alternative to Cyberduck, WinSCP, and clumsy web consoles.*
 
-Designed as an open-core desktop application with a clean Plane.so-inspired dark & light user interface.
+[![Version](https://img.shields.io/badge/Release-v1.0.0-emerald?style=for-the-badge&logo=github)](https://github.com/Chistogov/syncra/releases/latest)
+[![Windows](https://img.shields.io/badge/Platform-Windows-blue?style=for-the-badge&logo=windows)](https://github.com/Chistogov/syncra/releases/latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-purple?style=for-the-badge)](LICENSE)
+[![Stars](https://img.shields.io/github/stars/Chistogov/syncra?style=for-the-badge&color=gold)](https://github.com/Chistogov/syncra/stargazers)
+
+<br/>
+
+🇷🇺 **[Читать на русском языке (README_RU.md)](README_RU.md)** • 🇺🇸 **English**
+
+<br/>
+
+<!-- HERO CTA DOWNLOAD BUTTONS -->
+<p align="center">
+  <a href="https://github.com/Chistogov/syncra/releases/download/v1.0.0/Syncra.Setup.1.0.0.exe">
+    <img src="https://img.shields.io/badge/📥_Download_Installer_(Windows)-2563eb?style=for-the-badge&logo=windows&logoColor=white" height="42" alt="Download Syncra Installer" />
+  </a>
+  &nbsp;&nbsp;
+  <a href="https://github.com/Chistogov/syncra/releases/download/v1.0.0/Syncra.1.0.0.exe">
+    <img src="https://img.shields.io/badge/⚡_Download_Portable_(No_Install)-059669?style=for-the-badge" height="42" alt="Download Portable" />
+  </a>
+</p>
+<p><sub>✨ Includes instant 14-day fully-featured Pro trial. Zero registration required.</sub></p>
+
+<br/>
+
+<img src="docs/images/01_hero_explorer.png" alt="Syncra S3 & MinIO Desktop Explorer" width="100%" style="border-radius: 10px; border: 1px solid #30363d;" />
+
+</div>
+
+---
+
+## 💡 Why Syncra?
+
+Most S3 tools were built over a decade ago. They are slow, dated, and force you to download files manually just to make a one-line change.
+
+**Syncra redefines cloud storage management with modern desktop-first workflows:**
+
+---
+
+### 🔥 1. Edit-in-Place (Auto-sync `Ctrl + S` directly to S3)
+Open Word (`.docx`), Excel (`.xlsx`), Photoshop, or text files directly in your native desktop apps. The moment you press **`Ctrl + S`**, Syncra detects the change and automatically uploads the updated version back to your S3 bucket.
 
 <p align="center">
-  <img src="docs/images/main_form.png" alt="Syncra S3 & MinIO Desktop Explorer" width="100%">
+  <img src="docs/images/02_edit_in_place.png" alt="Syncra Edit in Place Feature" width="100%" style="border-radius: 10px; border: 1px solid #30363d;" />
 </p>
+
+---
+
+### 💻 2. In-Storage Monaco Code Editor (VS Code Engine)
+Edit JSON, YAML, SQL, Shell scripts, and Python files directly inside your cloud bucket. Features syntax highlighting, line numbers, and a code minimap powered by Monaco Editor.
+
+<p align="center">
+  <img src="docs/images/03_monaco_editor.png" alt="Syncra Embedded Monaco Editor" width="100%" style="border-radius: 10px; border: 1px solid #30363d;" />
+</p>
+
+---
+
+### 🚀 3. High-Performance Transfer Queue Manager
+Massive background uploads and downloads with real-time speed monitoring, retry handlers, and progress bars. Easily handle thousands of files without UI freezes.
+
+<p align="center">
+  <img src="docs/images/04_transfer_queue.png" alt="Syncra High Performance Transfer Queue" width="100%" style="border-radius: 10px; border: 1px solid #30363d;" />
+</p>
+
+---
+
+### ⚡ 4. Instant Quick Look & Media Lightbox
+Press **`Space`** to preview PDFs, high-res photos, 4K videos, and code without downloading them to disk. Includes an interactive multi-image gallery with pan and zoom.
+
+<p align="center">
+  <img src="docs/images/05_gallery_lightbox.png" alt="Syncra Quick Look Image Gallery" width="100%" style="border-radius: 10px; border: 1px solid #30363d;" />
+</p>
+
+---
+
+### 📱 5. Embedded Local Web Server (Mobile Access)
+Access and browse your cloud storage from smartphones or tablets over your local Wi-Fi. Zero app installation required — simply connect via browser with secure 6-digit PIN protection.
+
+<p align="center">
+  <img src="docs/images/06_mobile_web.png" alt="Syncra Mobile Web Client" width="340" style="border-radius: 20px; border: 1px solid #30363d;" />
+</p>
+
+---
+
+## 🥊 How Syncra Compares
+
+| Capability | Syncra | Cyberduck | WinSCP | AWS Web Console |
+| :--- | :---: | :---: | :---: | :---: |
+| **Modern Dark/Light UI** | **✅ Slick (Plane.so style)** | ❌ Outdated | ❌ Legacy 2000s | ⚠️ Clunky |
+| **Edit-in-Place (`Ctrl+S` auto-save)** | **✅ Instant to S3** | ⚠️ Unstable lock | ❌ Download only | ❌ Download only |
+| **Integrated Code Editor (Monaco)** | **✅ Built-in (VS Code)** | ❌ External only | ⚠️ Basic Notepad | ❌ No |
+| **MinIO IAM & Visual mc Admin** | **✅ Built-in GUI** | ❌ None | ❌ None | ❌ None |
+| **Native Windows Copy-Paste** | **✅ `Ctrl+C` → `Ctrl+V`** | ❌ No | ❌ No | ❌ No |
+| **Fast Media & PDF Preview** | **✅ Spacebar Quick Look** | ⚠️ Slow QuickLook | ❌ No | ❌ Limited |
+| **Local WiFi Mobile Access** | **✅ Built-in (PIN)** | ❌ No | ❌ No | ❌ No |
 
 ---
 
 ## 🌟 Key Features (Community Edition)
 
-- **Multi-Cloud S3 Profiles**: Connect to MinIO (local & remote), AWS S3, Ceph, Yandex Cloud, Wasabi, and Cloudflare R2.
-- **Path-Style & Virtual-Hosted Addressing**: Native support for `s3ForcePathStyle` required for private MinIO instances.
-- **Connection Diagnostics**: Instant ping and credential verification (`Test Connection`).
-- **Flexible Views**: Switch effortlessly between a compact detail Table and visual Grid cards.
-- **Quick Look Drawer**: Instant preview without downloading files to disk:
-  - **Images**: PNG, JPG, GIF, WebP, SVG with pan and zoom.
-  - **PDF Documents**: Built-in multi-page PDF reader with zoom and print support.
-  - **Media**: HTML5 audio and video playback.
-  - **Code & Text**: Syntax-highlighted preview for JSON, YAML, XML, SQL, TS/JS, Python, Shell, and Markdown.
-- **Transfer Queue Manager**: Background transfers with speed, progress bars, and retry handling.
-- **Drag & Drop**: Seamlessly drag files and folders from Windows Explorer directly into the S3 bucket.
-- **S3 Object Tagging**: View, manage, batch-tag, and filter objects with boolean logic (`AND`, `OR`, `EXACT`).
-- **Embedded Local Web Server**: Access and browse your files from mobile phones or tablets in your local network with secure 6-digit PIN protection.
-- **Localization**: Full Russian and English language support with instant switching.
-- **Dark & Light Themes**: Carefully crafted modern themes.
+* **Multi-Cloud S3 Profiles:** Connect to MinIO (local & remote), AWS S3, Ceph RADOS Gateway, Yandex Object Storage, Wasabi, and Cloudflare R2.
+* **Dual Addressing Modes:** Full support for Path-Style (`s3ForcePathStyle`) and Virtual-Hosted routing.
+* **Connection Diagnostics:** Instant ping and credential verification with `Test Connection`.
+* **Flexible Views:** Switch effortlessly between a dense detail Table and visual Grid cards.
+* **S3 Object Tagging:** View, manage, batch-tag, and filter objects using `AND`, `OR`, and `EXACT` boolean logic.
+* **Drag & Drop:** Directly drag files and folders from Windows Explorer into buckets.
+* **Presigned URLs:** Generate temporary public download links with custom expiration (15m, 1h, 24h, 7d).
+* **Native Clipboard Integration:** Copy objects in Syncra (`Ctrl + C`) and paste directly into Windows Explorer (`Ctrl + V`).
 
 ---
 
 ## 📊 Community vs Pro Edition
 
-Syncra is developed under an **Open-Core** model:
+Syncra is built on an **Open-Core** model:
 
 | Feature | Community Edition (Open Source) | Pro Edition (Official Release) |
 | :--- | :---: | :---: |
-| **License** | Free Forever (MIT) | Commercial / Lifetime |
-| **S3 Connection Profiles** | Up to 3 servers | **Unlimited servers** |
+| **License** | Free Forever (MIT) | Commercial / Lifetime ($29) |
+| **Active S3 Server Profiles** | Up to 3 servers | **Unlimited servers** |
 | **Full File & Bucket Operations** | ✅ Full access | ✅ Full access |
 | **Quick Look & PDF Viewer** | ✅ Full access | ✅ Full access |
-| **S3 Object Tagging & Filters** | ✅ Full access | ✅ Full access |
+| **S3 Object Tagging & Filtering** | ✅ Full access | ✅ Full access |
 | **Embedded Mobile Web Server** | ✅ Full access | ✅ Full access |
-| **Direct Edit-in-Place** *(Auto-sync Ctrl+S from Word/Excel/Photoshop to S3)* | ❌ *(Pro only)* | **✅ Full access** |
-| **In-Storage Monaco Code Editor** *(Direct save to S3)* | View only | **✅ Full edit & save** |
-| **MinIO IAM & Cluster Admin Panel** *(Users, Groups, Visual Policies)* | ❌ *(Pro only)* | **✅ Full GUI Admin** |
-| **Hardware-Locked Offline Licensing** | — | **✅ 1-Click HWID Activation** |
+| **Edit-in-Place (Auto-sync `Ctrl+S`)** | ❌ Pro feature | **✅ Full access** |
+| **In-Storage Monaco Code Editor** | View-only | **✅ Full edit & save** |
+| **Visual MinIO Admin Panel (`mc` GUI)** | ❌ Pro feature | **✅ Full GUI Admin** |
+| **Hardware-Locked Offline Activation** | — | **✅ 1-Click HWID Key** |
+
+> 🎁 **Every official binary includes a 14-day fully unlocked Pro trial with zero feature restrictions!**
+
+---
+
+## 📦 Download Official Binaries
+
+Skip building from source and download ready-to-run Windows binaries:
+
+* **[Download Syncra Setup v1.0.0 (Windows Installer)](https://github.com/Chistogov/syncra/releases/download/v1.0.0/Syncra.Setup.1.0.0.exe)**
+* **[Download Syncra Portable v1.0.0 (.exe without installation)](https://github.com/Chistogov/syncra/releases/download/v1.0.0/Syncra.1.0.0.exe)**
 
 ---
 
 ## 🚀 Quick Start (Run from Source)
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (v18 or later)
-- `npm` or `yarn`
+* [Node.js](https://nodejs.org/) (v18 or later)
+* `npm` or `yarn`
 
-### 1. Clone the repository
 ```bash
+# 1. Clone the repository
 git clone https://github.com/Chistogov/syncra.git
 cd syncra
-```
 
-### 2. Install dependencies
-```bash
+# 2. Install dependencies
 npm install
-```
 
-### 3. Run in Development Mode
-```bash
+# 3. Launch in development mode with HMR
 npm run dev
-```
 
-### 4. Build & Run Desktop App
-```bash
+# 4. Build desktop release
 npm run build
-npm start
 ```
-
----
-
-## 📦 Download Official Pre-compiled Binaries
-
-If you don't want to build from source, download the latest official installer for Windows, macOS, or Linux from the **[Releases](https://github.com/Chistogov/syncra/releases)** page.
-
-Official releases include a **14-day fully-featured Pro trial** with zero feature restrictions out of the box.
 
 ---
 
 ## 🛡 Security & Privacy
 
-- All AWS/MinIO credentials (`Access Key`, `Secret Key`) and server endpoints are stored strictly on your local machine using Electron secure stores.
-- Credentials are **never** transmitted to any external telemetry or third-party servers.
+* **Local-First Credentials:** All AWS/MinIO access keys, secrets, and endpoint configurations are stored locally on your machine using OS-level secure credential storage.
+* **Zero Telemetry on Bucket Data:** Syncra connects directly to your S3 endpoints. Your data, files, and credentials are never transmitted through external proxy servers.
 
 ---
 

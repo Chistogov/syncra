@@ -347,6 +347,28 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
     [profile, bucket, items, selectedKeys, t]
   );
 
+  const handleCopyPath = useCallback(
+    (item: S3Item) => {
+      const sel = items.filter((i) => selectedKeys.has(i.key));
+      const itemsToCopy = selectedKeys.has(item.key) && sel.length > 1 ? sel : [item];
+      const textToCopy = itemsToCopy
+        .map((i) => (bucket ? `s3://${bucket}/${i.key}` : i.key))
+        .join('\n');
+      navigator.clipboard.writeText(textToCopy);
+      setCopyState({
+        isCopying: false,
+        message:
+          itemsToCopy.length === 1
+            ? `${t('browser.pathCopied')}: ${textToCopy}`
+            : t('browser.pathsCopiedCount', { count: itemsToCopy.length }),
+        type: 'success',
+      });
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => setCopyState(null), 3000);
+    },
+    [bucket, items, selectedKeys, t]
+  );
+
   const handleRenameConfirm = useCallback(
     async (item: S3Item, newName: string) => {
       if (!profile || !bucket) return;
@@ -1193,6 +1215,7 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
             setMovingItems([item]);
           }
         }}
+        onCopyPath={handleCopyPath}
         onCopy={(item) => handleCopySelected([item])}
         onOpenTags={(item) => setTaggingItems([item])}
         onDownload={(item) => onDownloadItem(item)}

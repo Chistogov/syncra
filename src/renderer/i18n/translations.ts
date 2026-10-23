@@ -177,6 +177,8 @@ export const translations = {
     'browser.copiedToClipboard': 'Скопировано ({count} объектов). Нажмите Ctrl+V в Проводнике для вставки',
     'browser.copyFailed': 'Не удалось скопировать объекты',
     'browser.copyError': 'Ошибка копирования в буфер обмена',
+    'browser.pathCopied': 'Путь скопирован',
+    'browser.pathsCopiedCount': 'Скопировано путей: {count}',
 
     // Таблица и Сетка (Table & Grid)
     'table.name': 'Имя',
@@ -622,6 +624,7 @@ export const translations = {
     'menu.copyPresignedUrl': 'Скопировать Presigned URL',
     'menu.tags': 'Теги объекта',
     'menu.copyUrl': 'Копировать URL',
+    'menu.copyPath': 'Копировать путь',
     'menu.copyS3Uri': 'Копировать S3 URI',
     'menu.copyForExplorer': 'Копировать для Проводника',
     'menu.copyFolderForExplorer': 'Копировать папку для Проводника',
@@ -851,6 +854,8 @@ export const translations = {
     'browser.copiedToClipboard': 'Copied ({count} objects). Press Ctrl+V in Explorer to paste',
     'browser.copyFailed': 'Failed to copy objects',
     'browser.copyError': 'Error copying to clipboard',
+    'browser.pathCopied': 'Path copied',
+    'browser.pathsCopiedCount': 'Copied {count} paths',
 
     // Table & Grid
     'table.name': 'Name',
@@ -1296,6 +1301,7 @@ export const translations = {
     'menu.copyPresignedUrl': 'Copy Presigned URL',
     'menu.tags': 'Object Tags',
     'menu.copyUrl': 'Copy URL',
+    'menu.copyPath': 'Copy Path',
     'menu.copyS3Uri': 'Copy S3 URI',
     'menu.copyForExplorer': 'Copy for Explorer',
     'menu.copyFolderForExplorer': 'Copy Folder for Explorer',

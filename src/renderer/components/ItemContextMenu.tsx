@@ -16,6 +16,7 @@ import {
   Images,
   Edit3,
   FolderInput,
+  ClipboardCopy,
 } from 'lucide-react';
 import { S3Item } from '../../common/types';
 import { useTranslation } from '../context/LanguageContext';
@@ -33,6 +34,7 @@ export interface ItemContextMenuProps {
   onToggleSelect: (key: string) => void;
   onRename?: (item: S3Item) => void;
   onMove?: (item: S3Item) => void;
+  onCopyPath?: (item: S3Item) => void;
   onCopy?: (item: S3Item) => void;
   onOpenTags?: (item: S3Item) => void;
   onDownload: (item: S3Item) => void;
@@ -57,6 +59,7 @@ export const ItemContextMenu: React.FC<ItemContextMenuProps> = ({
   onToggleSelect,
   onRename,
   onMove,
+  onCopyPath,
   onCopy,
   onOpenTags,
   onDownload,
@@ -271,6 +274,20 @@ export const ItemContextMenu: React.FC<ItemContextMenuProps> = ({
               </button>
             )}
 
+            {/* Copy Path */}
+            {onCopyPath && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onCopyPath(item);
+                }}
+                className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-muted active:bg-muted/80 text-foreground transition-colors"
+              >
+                <ClipboardCopy className="w-4 h-4 text-muted-foreground" />
+                <span>{t('menu.copyPath')}</span>
+              </button>
+            )}
+
             {/* Rename */}
             {onRename && (
               <button
@@ -479,6 +496,20 @@ export const ItemContextMenu: React.FC<ItemContextMenuProps> = ({
             >
               <Link2 className="w-3.5 h-3.5" />
               <span>{t('browser.presignedUrl')}</span>
+            </button>
+          )}
+
+          {/* Copy Path */}
+          {onCopyPath && (
+            <button
+              onClick={() => {
+                onClose();
+                onCopyPath(item);
+              }}
+              className="w-full flex items-center space-x-2 px-2.5 py-1.5 rounded-md hover:bg-muted text-foreground transition-colors text-left cursor-pointer"
+            >
+              <ClipboardCopy className="w-3.5 h-3.5 text-muted-foreground" />
+              <span>{t('menu.copyPath')}</span>
             </button>
           )}
 

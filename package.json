@@ -1,8 +1,8 @@
 {
   "name": "syncra",
   "productName": "Syncra",
-  "version": "1.0.0",
-  "description": "Syncra — Fast & modern cross-platform desktop explorer for S3 and MinIO (Community Edition)",
+  "version": "1.0.1",
+  "description": "Syncra — Modern S3 and MinIO Cloud Explorer with Edit-in-Place support",
   "main": "dist-electron/main/index.js",
   "scripts": {
     "dev:vite": "vite",
@@ -10,7 +10,36 @@
     "build:electron": "tsc -p tsconfig.electron.json",
     "build": "npm run build:renderer && npm run build:electron",
     "start": "electron .",
-    "dev": "concurrently -k \"vite\" \"wait-on tcp:5173 && electron .\""
+    "dev": "concurrently -k \"vite\" \"wait-on tcp:5173 && electron .\"",
+    "dist:win": "npm run build && electron-builder --win",
+    "keygen": "node scripts/keygen.js",
+    "keygen:gui": "node -e \"const { exec } = require('child_process'); const p = require('path').resolve('./scripts/keygen.html'); const cmd = process.platform === 'win32' ? 'start ' : process.platform === 'darwin' ? 'open ' : 'xdg-open '; exec(cmd + ' \\\"' + p + '\\\"');\""
+  },
+  "build": {
+    "appId": "com.syncra.s3explorer",
+    "productName": "Syncra",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Syncra"
+    }
   },
   "keywords": [
     "s3",
@@ -47,6 +76,7 @@
     "concurrently": "^9.1.0",
     "cross-env": "^7.0.3",
     "electron": "^33.2.1",
+    "electron-builder": "^26.15.3",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.16",
     "typescript": "^5.7.2",

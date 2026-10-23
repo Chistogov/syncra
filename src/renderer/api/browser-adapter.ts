@@ -234,6 +234,36 @@ export function initBrowserElectronAPI() {
         });
         return res.success;
       },
+      moveObjects: async (
+        profile: S3Profile,
+        bucket: string,
+        items: { key: string; isPrefix: boolean }[],
+        targetPrefix: string
+      ): Promise<boolean> => {
+        const res = await apiFetch<{ success: boolean }>('/api/s3/moveObjects', {
+          profile,
+          bucket,
+          items,
+          targetPrefix,
+        });
+        return res.success;
+      },
+      renameObject: async (
+        profile: S3Profile,
+        bucket: string,
+        oldKey: string,
+        newName: string,
+        isPrefix: boolean
+      ): Promise<boolean> => {
+        const res = await apiFetch<{ success: boolean }>('/api/s3/renameObject', {
+          profile,
+          bucket,
+          oldKey,
+          newName,
+          isPrefix,
+        });
+        return res.success;
+      },
       getPresignedUrl: async (
         profile: S3Profile,
         bucket: string,

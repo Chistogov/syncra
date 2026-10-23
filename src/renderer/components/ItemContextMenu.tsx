@@ -14,6 +14,8 @@ import {
   Trash2,
   X,
   Images,
+  Edit3,
+  FolderInput,
 } from 'lucide-react';
 import { S3Item } from '../../common/types';
 import { useTranslation } from '../context/LanguageContext';
@@ -29,6 +31,8 @@ export interface ItemContextMenuProps {
   onClose: () => void;
   onOpen: (item: S3Item) => void;
   onToggleSelect: (key: string) => void;
+  onRename?: (item: S3Item) => void;
+  onMove?: (item: S3Item) => void;
   onCopy?: (item: S3Item) => void;
   onOpenTags?: (item: S3Item) => void;
   onDownload: (item: S3Item) => void;
@@ -51,6 +55,8 @@ export const ItemContextMenu: React.FC<ItemContextMenuProps> = ({
   onClose,
   onOpen,
   onToggleSelect,
+  onRename,
+  onMove,
   onCopy,
   onOpenTags,
   onDownload,
@@ -265,6 +271,34 @@ export const ItemContextMenu: React.FC<ItemContextMenuProps> = ({
               </button>
             )}
 
+            {/* Rename */}
+            {onRename && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onRename(item);
+                }}
+                className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-muted active:bg-muted/80 text-foreground transition-colors"
+              >
+                <Edit3 className="w-4 h-4 text-muted-foreground" />
+                <span>{t('menu.rename')}</span>
+              </button>
+            )}
+
+            {/* Move */}
+            {onMove && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onMove(item);
+                }}
+                className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium hover:bg-muted active:bg-muted/80 text-foreground transition-colors"
+              >
+                <FolderInput className="w-4 h-4 text-muted-foreground" />
+                <span>{t('menu.move')}</span>
+              </button>
+            )}
+
             {/* Copy for Explorer */}
             {onCopy && (
               <button
@@ -445,6 +479,34 @@ export const ItemContextMenu: React.FC<ItemContextMenuProps> = ({
             >
               <Link2 className="w-3.5 h-3.5" />
               <span>{t('browser.presignedUrl')}</span>
+            </button>
+          )}
+
+          {/* Rename */}
+          {onRename && (
+            <button
+              onClick={() => {
+                onClose();
+                onRename(item);
+              }}
+              className="w-full flex items-center space-x-2 px-2.5 py-1.5 rounded-md hover:bg-muted text-foreground transition-colors text-left"
+            >
+              <Edit3 className="w-3.5 h-3.5 text-muted-foreground" />
+              <span>{t('menu.rename')}</span>
+            </button>
+          )}
+
+          {/* Move */}
+          {onMove && (
+            <button
+              onClick={() => {
+                onClose();
+                onMove(item);
+              }}
+              className="w-full flex items-center space-x-2 px-2.5 py-1.5 rounded-md hover:bg-muted text-foreground transition-colors text-left"
+            >
+              <FolderInput className="w-3.5 h-3.5 text-muted-foreground" />
+              <span>{t('menu.move')}</span>
             </button>
           )}
 

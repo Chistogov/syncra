@@ -18,6 +18,7 @@ import {
   GetObjectTaggingCommand,
   PutObjectTaggingCommand,
   DeleteObjectTaggingCommand,
+  CopyObjectCommand,
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Upload } from '@aws-sdk/lib-storage';
@@ -420,6 +421,146 @@ export class S3Service {
     }
 
     return true;
+  }
+
+  public async moveObject(
+    profile: S3Profile,
+    bucket: string,
+    sourceKey: string,
+    destKey: string
+  ): Promise<boolean> {
+    const client = this.getClient(profile);
+    if (sourceKey === destKey) return true;
+
+    const isFolder = sourceKey.endsWith('/');
+    const normalizedSource = isFolder ? sourceKey : sourceKey;
+    const normalizedDest = isFolder && !destKey.endsWith('/') ? `${destKey}/` : destKey;
+
+    if (isFolder) {
+      // 1. List all objects under source folder prefix
+      const allObjects: string[] = [];
+      let continuationToken: string | undefined = undefined;
+      let isTruncated = true;
+
+      while (isTruncated) {
+        const listRes: ListObjectsV2CommandOutput = await client.send(
+          new ListObjectsV2Command({
+            Bucket: bucket,
+            Prefix: normalizedSource,
+            ContinuationToken: continuationToken,
+          })
+        );
+
+        if (listRes.Contents) {
+          for (const item of listRes.Contents) {
+            if (item.Key) allObjects.push(item.Key);
+          }
+        }
+
+        isTruncated = Boolean(listRes.IsTruncated);
+        continuationToken = listRes.NextContinuationToken;
+      }
+
+      // If folder was empty in S3 (e.g. purely virtual or 0 objects)
+      if (allObjects.length === 0) {
+        await client.send(
+          new PutObjectCommand({
+            Bucket: bucket,
+            Key: normalizedDest,
+            Body: Buffer.alloc(0),
+          })
+        );
+        return true;
+      }
+
+      // 2. Copy each object to destination
+      for (const oldKey of allObjects) {
+        const subPath = oldKey.substring(normalizedSource.length);
+        const newKey = `${normalizedDest}${subPath}`;
+        const copySource = `${bucket}/${encodeURIComponent(oldKey).replace(/%2F/g, '/')}`;
+
+        await client.send(
+          new CopyObjectCommand({
+            Bucket: bucket,
+            Key: newKey,
+            CopySource: copySource,
+          })
+        );
+      }
+
+      // 3. Delete old objects
+      await this.deleteObjects(profile, bucket, allObjects);
+    } else {
+      // Single file move
+      const copySource = `${bucket}/${encodeURIComponent(sourceKey).replace(/%2F/g, '/')}`;
+      await client.send(
+        new CopyObjectCommand({
+          Bucket: bucket,
+          Key: normalizedDest,
+          CopySource: copySource,
+        })
+      );
+
+      await client.send(
+        new DeleteObjectCommand({
+          Bucket: bucket,
+          Key: sourceKey,
+        })
+      );
+    }
+
+    return true;
+  }
+
+  public async moveObjects(
+    profile: S3Profile,
+    bucket: string,
+    items: { key: string; isPrefix: boolean }[],
+    targetPrefix: string
+  ): Promise<boolean> {
+    const normalizedTarget = targetPrefix && !targetPrefix.endsWith('/') ? `${targetPrefix}/` : targetPrefix;
+
+    for (const item of items) {
+      if (item.isPrefix) {
+        const folderName = item.key.replace(/\/+$/, '').split('/').pop() || 'folder';
+        const newKey = `${normalizedTarget}${folderName}/`;
+        if (item.key === newKey) continue;
+        await this.moveObject(profile, bucket, item.key, newKey);
+      } else {
+        const fileName = item.key.split('/').pop() || 'file';
+        const newKey = `${normalizedTarget}${fileName}`;
+        if (item.key === newKey) continue;
+        await this.moveObject(profile, bucket, item.key, newKey);
+      }
+    }
+
+    return true;
+  }
+
+  public async renameObject(
+    profile: S3Profile,
+    bucket: string,
+    oldKey: string,
+    newName: string,
+    isPrefix: boolean
+  ): Promise<boolean> {
+    const cleanName = newName.trim().replace(/^\/+|\/+$/g, '');
+    if (!cleanName) throw new Error('Имя объекта не может быть пустым');
+
+    let newKey: string;
+    if (isPrefix) {
+      const parts = oldKey.replace(/\/+$/, '').split('/');
+      parts.pop(); // remove old folder name
+      const parent = parts.length > 0 ? `${parts.join('/')}/` : '';
+      newKey = `${parent}${cleanName}/`;
+    } else {
+      const parts = oldKey.split('/');
+      parts.pop(); // remove old file name
+      const parent = parts.length > 0 ? `${parts.join('/')}/` : '';
+      newKey = `${parent}${cleanName}`;
+    }
+
+    return await this.moveObject(profile, bucket, oldKey, newKey);
   }
 
   public async uploadFile(

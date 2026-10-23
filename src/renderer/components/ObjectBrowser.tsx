@@ -20,6 +20,7 @@ import {
   Tag,
   Filter,
   Lock,
+  FolderInput,
 } from 'lucide-react';
 import { S3Item, S3Profile, S3Tag, UserPermissions } from '../../common/types';
 import { useTranslation } from '../context/LanguageContext';
@@ -28,6 +29,8 @@ import { ObjectGrid } from './ObjectGrid';
 import { ItemContextMenu } from './ItemContextMenu';
 import { FolderContextMenu } from './FolderContextMenu';
 import { ObjectTagsModal } from './ObjectTagsModal';
+import { RenameModal } from './RenameModal';
+import { MoveModal } from './MoveModal';
 import { TagFilterPopover, TagFilterMode } from './TagFilterPopover';
 import { formatBytes, formatSpeed } from '../utils/formatters';
 
@@ -133,6 +136,8 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
   const [folderContextMenu, setFolderContextMenu] = useState<{
     position: { x: number; y: number };
   } | null>(null);
+  const [renamingItem, setRenamingItem] = useState<S3Item | null>(null);
+  const [movingItems, setMovingItems] = useState<S3Item[] | null>(null);
   const [taggingItems, setTaggingItems] = useState<S3Item[] | null>(null);
   const [tagsMap, setTagsMap] = useState<Record<string, S3Tag[]>>({});
   const [tagFilterMode, setTagFilterMode] = useState<TagFilterMode>('all');
@@ -174,6 +179,8 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
     setIsMobileSearchOpen(false);
     setContextMenu(null);
     setFolderContextMenu(null);
+    setRenamingItem(null);
+    setMovingItems(null);
   }, [bucket, prefix]);
 
   // Fetch tags in background for current folder items
@@ -340,6 +347,48 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
     [profile, bucket, items, selectedKeys, t]
   );
 
+  const handleRenameConfirm = useCallback(
+    async (item: S3Item, newName: string) => {
+      if (!profile || !bucket) return;
+      await window.electronAPI.s3.renameObject(
+        profile,
+        bucket,
+        item.key,
+        newName,
+        item.isPrefix
+      );
+      onRefresh();
+      setCopyState({
+        isCopying: false,
+        message: t('moveModal.renameSuccess'),
+        type: 'success',
+      });
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => setCopyState(null), 3000);
+    },
+    [profile, bucket, onRefresh, t]
+  );
+
+  const handleMoveConfirm = useCallback(
+    async (targetPrefix: string) => {
+      if (!profile || !bucket || !movingItems || movingItems.length === 0) return;
+      const payload = movingItems.map((item) => ({
+        key: item.key,
+        isPrefix: item.isPrefix,
+      }));
+      await window.electronAPI.s3.moveObjects(profile, bucket, payload, targetPrefix);
+      onRefresh();
+      setCopyState({
+        isCopying: false,
+        message: t('moveModal.moveSuccess'),
+        type: 'success',
+      });
+      if (copyTimeoutRef.current) clearTimeout(copyTimeoutRef.current);
+      copyTimeoutRef.current = setTimeout(() => setCopyState(null), 3000);
+    },
+    [profile, bucket, movingItems, onRefresh, t]
+  );
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Layout-independent Ctrl + F to focus search
@@ -380,7 +429,16 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
       if (isTextInputElement(e.target)) {
         return;
       }
-      if (e.code === 'Space') {
+      if (e.key === 'F2') {
+        if (selectedKeys.size === 1) {
+          const selectedKey = Array.from(selectedKeys)[0];
+          const item = items.find((i) => i.key === selectedKey);
+          if (item) {
+            e.preventDefault();
+            setRenamingItem(item);
+          }
+        }
+      } else if (e.code === 'Space') {
         e.preventDefault();
         if (selectedKeys.size === 1) {
           const selectedKey = Array.from(selectedKeys)[0];
@@ -398,7 +456,7 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedKeys, items, onPreview, onDeleteItems, handleCopySelected]);
+  }, [selectedKeys, items, onPreview, onDeleteItems, handleCopySelected, canDeleteItems]);
 
   const dragCounter = useRef(0);
 
@@ -720,6 +778,19 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
                       </button>
                     );
                   })()}
+                  <button
+                    onClick={() => {
+                      const sel = items.filter((item) => selectedKeys.has(item.key));
+                      if (sel.length > 0) {
+                        setMovingItems(sel);
+                      }
+                    }}
+                    className="flex items-center space-x-1 p-1.5 sm:px-2.5 sm:py-1 text-foreground hover:bg-muted border border-border rounded-md transition-colors font-medium text-xs shadow-xs whitespace-nowrap flex-shrink-0 cursor-pointer"
+                    title={t('menu.move')}
+                  >
+                    <FolderInput className="w-3.5 h-3.5 text-muted-foreground" />
+                    <span className="hidden sm:inline">{t('menu.move')}</span>
+                  </button>
                   <button
                     onClick={() => {
                       const selectedItems = items.filter((item) => selectedKeys.has(item.key));
@@ -1113,6 +1184,15 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
         onClose={() => setContextMenu(null)}
         onOpen={(item) => onItemDoubleClick(item)}
         onToggleSelect={(key) => handleToggleSelect(key, false)}
+        onRename={(item) => setRenamingItem(item)}
+        onMove={(item) => {
+          const sel = items.filter((i) => selectedKeys.has(i.key));
+          if (selectedKeys.has(item.key) && sel.length > 1) {
+            setMovingItems(sel);
+          } else {
+            setMovingItems([item]);
+          }
+        }}
         onCopy={(item) => handleCopySelected([item])}
         onOpenTags={(item) => setTaggingItems([item])}
         onDownload={(item) => onDownloadItem(item)}
@@ -1177,6 +1257,25 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
           }
           onRefresh();
         }}
+      />
+
+      {/* Rename Modal */}
+      <RenameModal
+        isOpen={Boolean(renamingItem)}
+        item={renamingItem}
+        onClose={() => setRenamingItem(null)}
+        onRename={handleRenameConfirm}
+      />
+
+      {/* Move Modal */}
+      <MoveModal
+        isOpen={Boolean(movingItems && movingItems.length > 0)}
+        items={movingItems || []}
+        profile={profile}
+        bucket={bucket}
+        initialPrefix={prefix}
+        onClose={() => setMovingItems(null)}
+        onMoveConfirm={handleMoveConfirm}
       />
     </div>
   );

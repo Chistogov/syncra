@@ -605,6 +605,18 @@ export class WebServerService {
         return this.sendJson(res, 200, { success: ok });
       }
 
+      if (pathname === '/api/s3/moveObjects' && method === 'POST') {
+        const { profile, bucket, items, targetPrefix } = await this.parseJsonBody(req);
+        const ok = await this.s3Service.moveObjects(profile, bucket, items, targetPrefix);
+        return this.sendJson(res, 200, { success: ok });
+      }
+
+      if (pathname === '/api/s3/renameObject' && method === 'POST') {
+        const { profile, bucket, oldKey, newName, isPrefix } = await this.parseJsonBody(req);
+        const ok = await this.s3Service.renameObject(profile, bucket, oldKey, newName, isPrefix);
+        return this.sendJson(res, 200, { success: ok });
+      }
+
       if (pathname === '/api/s3/getPresignedUrl' && method === 'POST') {
         const { profile, bucket, key, expiresIn } = await this.parseJsonBody(req);
         const url = await this.s3Service.generatePresignedUrl(profile, bucket, key, expiresIn);

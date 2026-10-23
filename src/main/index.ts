@@ -496,6 +496,33 @@ app.whenReady().then(() => {
   );
 
   ipcMain.handle(
+    's3:moveObjects',
+    async (
+      _event,
+      profile: S3Profile,
+      bucket: string,
+      items: { key: string; isPrefix: boolean }[],
+      targetPrefix: string
+    ) => {
+      return await s3Service.moveObjects(profile, bucket, items, targetPrefix);
+    }
+  );
+
+  ipcMain.handle(
+    's3:renameObject',
+    async (
+      _event,
+      profile: S3Profile,
+      bucket: string,
+      oldKey: string,
+      newName: string,
+      isPrefix: boolean
+    ) => {
+      return await s3Service.renameObject(profile, bucket, oldKey, newName, isPrefix);
+    }
+  );
+
+  ipcMain.handle(
     's3:openExternal',
     async (_event, profile: S3Profile, bucket: string, key: string, enableEditInPlace: boolean) => {
       if (!mainWindow || !watcherService) {

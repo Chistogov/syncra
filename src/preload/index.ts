@@ -128,6 +128,21 @@ export const electronAPI = {
       targetLocalDir: string
     ): Promise<number> =>
       ipcRenderer.invoke('s3:downloadDirectory', profile, bucket, prefix, targetLocalDir),
+    moveObjects: (
+      profile: S3Profile,
+      bucket: string,
+      items: { key: string; isPrefix: boolean }[],
+      targetPrefix: string
+    ): Promise<boolean> =>
+      ipcRenderer.invoke('s3:moveObjects', profile, bucket, items, targetPrefix),
+    renameObject: (
+      profile: S3Profile,
+      bucket: string,
+      oldKey: string,
+      newName: string,
+      isPrefix: boolean
+    ): Promise<boolean> =>
+      ipcRenderer.invoke('s3:renameObject', profile, bucket, oldKey, newName, isPrefix),
     openExternal: (
       profile: S3Profile,
       bucket: string,

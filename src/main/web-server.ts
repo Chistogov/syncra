@@ -561,6 +561,13 @@ export class WebServerService {
         return this.sendJson(res, 200, r);
       }
 
+      // 2.5 API: Auth & Permissions
+      if (pathname === '/api/auth/checkPermissions' && method === 'POST') {
+        const body = await this.parseJsonBody(req);
+        const perms = await this.minioAdmin.checkPermissions(body.profile, body.bucket);
+        return this.sendJson(res, 200, perms);
+      }
+
       // 3. API: S3 Operations
       if (pathname === '/api/s3/listBuckets' && method === 'POST') {
         const { profile } = await this.parseJsonBody(req);

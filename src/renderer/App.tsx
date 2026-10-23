@@ -141,7 +141,7 @@ export const App: React.FC = () => {
   }, [refreshWebServerStatus, isElectronApp]);
 
   // Web Authentication & PIN Protection state
-  const [webPinRequired, setWebPinRequired] = useState<boolean>(false);
+  const [webPinRequired, setWebPinRequired] = useState<boolean>(!isElectronApp);
   const [webAllowedUrls, setWebAllowedUrls] = useState<string[]>([]);
   const [isWebAuthenticated, setIsWebAuthenticated] = useState<boolean>(() => {
     if (isElectronApp) return true;
@@ -176,6 +176,10 @@ export const App: React.FC = () => {
 
     const handleWebAuthRequired = () => {
       setIsWebAuthenticated(false);
+      setActiveProfile(null);
+      setBuckets([]);
+      setSelectedBucket('');
+      setItems([]);
     };
 
     window.addEventListener('s3:webAuthRequired', handleWebAuthRequired);
@@ -189,6 +193,10 @@ export const App: React.FC = () => {
       await (window as any).electronAPI.webAuth.logout();
     }
     setIsWebAuthenticated(false);
+    setActiveProfile(null);
+    setBuckets([]);
+    setSelectedBucket('');
+    setItems([]);
   };
   const [licenseStatus, setLicenseStatus] = useState<LicenseStatus | null>(null);
   const isProActive = Boolean(licenseStatus ? licenseStatus.isPro : true);
@@ -212,8 +220,9 @@ export const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (!isElectronApp && !isWebAuthenticated) return;
     refreshLicenseStatus();
-  }, [refreshLicenseStatus]);
+  }, [refreshLicenseStatus, isElectronApp, isWebAuthenticated]);
 
   // Buckets & Navigation
   const [buckets, setBuckets] = useState<S3Bucket[]>([]);
@@ -673,17 +682,20 @@ export const App: React.FC = () => {
 
   // 1. Initial Load of profiles
   useEffect(() => {
+    if (!isElectronApp && !isWebAuthenticated) return;
     loadProfiles();
 
     // Listen for Edit-in-Place file changes
-    const unsubscribe = window.electronAPI.watcher.onFileChanged((event) => {
-      setWatcherEvent(event);
-    });
+    const unsubscribe = window.electronAPI.watcher?.onFileChanged
+      ? window.electronAPI.watcher.onFileChanged((event) => {
+          setWatcherEvent(event);
+        })
+      : () => {};
 
     return () => {
       unsubscribe();
     };
-  }, []);
+  }, [isElectronApp, isWebAuthenticated]);
 
   const loadProfiles = async () => {
     try {

@@ -1,7 +1,7 @@
 {
   "name": "syncra",
   "productName": "Syncra",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Syncra — Modern S3 and MinIO Cloud Explorer with Edit-in-Place support",
   "main": "dist-electron/main/index.js",
   "scripts": {
@@ -39,7 +39,13 @@
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
       "shortcutName": "Syncra"
-    }
+    },
+    "extraResources": [
+      {
+        "from": "mc.windows-amd64.RELEASE.2025-08-13T08-35-41Z.exe",
+        "to": "mc.exe"
+      }
+    ]
   },
   "keywords": [
     "s3",

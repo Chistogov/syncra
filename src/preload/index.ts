@@ -337,6 +337,20 @@ export const electronAPI = {
   }): Promise<{ success: boolean; count: number; error?: string }> =>
     ipcRenderer.invoke('s3:copyToClipboard', payload),
 
+  // Navigation events for mouse back/forward and hardware buttons
+  navigation: {
+    onNavigateBack: (callback: () => void) => {
+      const handler = () => callback();
+      ipcRenderer.on('nav:navigateBack', handler);
+      return () => ipcRenderer.removeListener('nav:navigateBack', handler);
+    },
+    onNavigateForward: (callback: () => void) => {
+      const handler = () => callback();
+      ipcRenderer.on('nav:navigateForward', handler);
+      return () => ipcRenderer.removeListener('nav:navigateForward', handler);
+    },
+  },
+
   // Helper to extract native filesystem path from DOM File object (Electron 28+)
   getPathForFile: (file: File): string => {
     try {

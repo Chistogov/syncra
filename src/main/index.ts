@@ -88,6 +88,26 @@ function createWindow() {
   mainWindow.removeMenu();
   mainWindow.setMenuBarVisibility(false);
 
+  // Handle hardware / mouse back and forward navigation buttons (buttons 3 and 4)
+  mainWindow.on('app-command', (_e, cmd) => {
+    if (cmd === 'browser-backward') {
+      mainWindow?.webContents.send('nav:navigateBack');
+    } else if (cmd === 'browser-forward') {
+      mainWindow?.webContents.send('nav:navigateForward');
+    }
+  });
+
+  // Also support mouse-up events with button 3 (back) and button 4 (forward)
+  mainWindow.webContents.on('input-event', (_e, input: any) => {
+    if (input.type === 'mouseUp') {
+      if (input.button === 'back') {
+        mainWindow?.webContents.send('nav:navigateBack');
+      } else if (input.button === 'forward') {
+        mainWindow?.webContents.send('nav:navigateForward');
+      }
+    }
+  });
+
   watcherService = new FileWatcherService(s3Service);
 
   const devServerUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173';

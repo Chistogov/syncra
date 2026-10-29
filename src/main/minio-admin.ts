@@ -53,28 +53,55 @@ export class MinioAdminService {
    * Automatically locate mc binary in project root, app directory, or resources
    */
   public findMcExecutable(): string | null {
-    const candidates = [
-      path.join(process.cwd(), 'mc.windows-amd64.RELEASE.2025-08-13T08-35-41Z.exe'),
-      path.join(process.cwd(), 'mc.exe'),
-      path.join(app.getAppPath(), 'mc.windows-amd64.RELEASE.2025-08-13T08-35-41Z.exe'),
-      path.join(app.getAppPath(), 'mc.exe'),
-      path.join(path.dirname(process.execPath), 'mc.exe'),
-      path.join(process.resourcesPath || '', 'mc.exe'),
-    ];
+    const candidates: string[] = [];
+
+    if (process.resourcesPath) {
+      candidates.push(path.join(process.resourcesPath, 'mc.exe'));
+      candidates.push(path.join(process.resourcesPath, 'mc.windows-amd64.RELEASE.2025-08-13T08-35-41Z.exe'));
+      candidates.push(path.join(process.resourcesPath, 'app.asar.unpacked', 'mc.exe'));
+    }
+
+    if (process.execPath) {
+      candidates.push(path.join(path.dirname(process.execPath), 'mc.exe'));
+      candidates.push(path.join(path.dirname(process.execPath), 'mc.windows-amd64.RELEASE.2025-08-13T08-35-41Z.exe'));
+      candidates.push(path.join(path.dirname(process.execPath), 'resources', 'mc.exe'));
+    }
+
+    const appPath = typeof app?.getAppPath === 'function' ? app.getAppPath() : null;
+    if (appPath) {
+      candidates.push(path.join(appPath, 'mc.exe'));
+      candidates.push(path.join(appPath, 'mc.windows-amd64.RELEASE.2025-08-13T08-35-41Z.exe'));
+      candidates.push(path.join(appPath, 'resources', 'mc.exe'));
+    }
+
+    const cwd = process.cwd();
+    if (cwd) {
+      candidates.push(path.join(cwd, 'mc.exe'));
+      candidates.push(path.join(cwd, 'mc.windows-amd64.RELEASE.2025-08-13T08-35-41Z.exe'));
+    }
 
     try {
-      const files = fs.readdirSync(process.cwd());
+      if (__dirname) {
+        candidates.push(path.join(__dirname, '..', '..', 'mc.exe'));
+        candidates.push(path.join(__dirname, '..', '..', 'mc.windows-amd64.RELEASE.2025-08-13T08-35-41Z.exe'));
+      }
+    } catch {}
+
+    try {
+      const files = fs.readdirSync(cwd);
       for (const f of files) {
         if (f.toLowerCase().startsWith('mc') && f.toLowerCase().endsWith('.exe')) {
-          candidates.push(path.join(process.cwd(), f));
+          candidates.push(path.join(cwd, f));
         }
       }
     } catch {}
 
     for (const p of candidates) {
-      if (fs.existsSync(p)) {
-        return p;
-      }
+      try {
+        if (p && fs.existsSync(p)) {
+          return p;
+        }
+      } catch {}
     }
     return null;
   }
@@ -1075,8 +1102,10 @@ export class MinioAdminService {
           ? kvMap.mime_types.split(',').map((s) => s.trim()).filter(Boolean)
           : [];
 
+        const isEnabled = kvList.length > 0 ? kvMap.enable !== 'off' : false;
+
         return {
-          enable: kvMap.enable === 'on',
+          enable: isEnabled,
           allow_encryption: kvMap.allow_encryption === 'on',
           extensions,
           mime_types: mimeTypes,
@@ -1089,8 +1118,10 @@ export class MinioAdminService {
         const enableMatch = out.match(/enable=([^\s]+)/);
         const encMatch = out.match(/allow_encryption=([^\s]+)/);
 
+        const isEnabled = enableMatch ? enableMatch[1] !== 'off' : out.includes('compression');
+
         return {
-          enable: enableMatch ? enableMatch[1] === 'on' : false,
+          enable: isEnabled,
           allow_encryption: encMatch ? encMatch[1] === 'on' : false,
           extensions: extMatch ? extMatch[1].split(',').filter(Boolean) : [],
           mime_types: mimeMatch ? mimeMatch[1].split(',').filter(Boolean) : [],

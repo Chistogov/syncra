@@ -235,6 +235,126 @@ export const App: React.FC = () => {
   const [nextContinuationToken, setNextContinuationToken] = useState<string | undefined>(undefined);
   const [loadingMoreItems, setLoadingMoreItems] = useState<boolean>(false);
 
+  // Navigation History Stack (Back/Forward with Mouse Buttons 3/4, Alt+Left/Right, and UI buttons)
+  const navHistoryRef = useRef<Array<{ bucket: string; prefix: string }>>([{ bucket: '', prefix: '' }]);
+  const navIndexRef = useRef<number>(0);
+  const isNavigatingHistoryRef = useRef<boolean>(false);
+  const [canGoBack, setCanGoBack] = useState(false);
+  const [canGoForward, setCanGoForward] = useState(false);
+
+  // Synchronize history when selectedBucket or currentPrefix changes
+  useEffect(() => {
+    if (isNavigatingHistoryRef.current) {
+      isNavigatingHistoryRef.current = false;
+      return;
+    }
+    const history = navHistoryRef.current;
+    const idx = navIndexRef.current;
+    const current = history[idx];
+
+    if (current && current.bucket === selectedBucket && current.prefix === currentPrefix) {
+      return;
+    }
+
+    const newHistory = history.slice(0, idx + 1);
+    newHistory.push({ bucket: selectedBucket, prefix: currentPrefix });
+    navHistoryRef.current = newHistory;
+    navIndexRef.current = newHistory.length - 1;
+
+    setCanGoBack(newHistory.length - 1 > 0);
+    setCanGoForward(false);
+  }, [selectedBucket, currentPrefix]);
+
+  // Reset history on profile change
+  useEffect(() => {
+    navHistoryRef.current = [{ bucket: '', prefix: '' }];
+    navIndexRef.current = 0;
+    setCanGoBack(false);
+    setCanGoForward(false);
+  }, [activeProfile?.id]);
+
+  const handleNavigateBack = useCallback(() => {
+    const history = navHistoryRef.current;
+    const idx = navIndexRef.current;
+    if (idx > 0) {
+      const targetIdx = idx - 1;
+      const target = history[targetIdx];
+      if (target) {
+        isNavigatingHistoryRef.current = true;
+        navIndexRef.current = targetIdx;
+        setCanGoBack(targetIdx > 0);
+        setCanGoForward(targetIdx < history.length - 1);
+
+        if (target.bucket !== selectedBucketRef.current) {
+          setSelectedBucket(target.bucket);
+        }
+        setCurrentPrefix(target.prefix);
+      }
+    }
+  }, []);
+
+  const handleNavigateForward = useCallback(() => {
+    const history = navHistoryRef.current;
+    const idx = navIndexRef.current;
+    if (idx < history.length - 1) {
+      const targetIdx = idx + 1;
+      const target = history[targetIdx];
+      if (target) {
+        isNavigatingHistoryRef.current = true;
+        navIndexRef.current = targetIdx;
+        setCanGoBack(targetIdx > 0);
+        setCanGoForward(targetIdx < history.length - 1);
+
+        if (target.bucket !== selectedBucketRef.current) {
+          setSelectedBucket(target.bucket);
+        }
+        setCurrentPrefix(target.prefix);
+      }
+    }
+  }, []);
+
+  // Listen to mouse buttons 3/4, IPC events, and Alt+Left/Right shortcuts
+  useEffect(() => {
+    const unsubBack = (window as any).electronAPI?.navigation?.onNavigateBack?.(() => {
+      handleNavigateBack();
+    });
+    const unsubForward = (window as any).electronAPI?.navigation?.onNavigateForward?.(() => {
+      handleNavigateForward();
+    });
+
+    const handleMouseUp = (e: MouseEvent) => {
+      if (e.button === 3) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleNavigateBack();
+      } else if (e.button === 4) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleNavigateForward();
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'Left')) {
+        e.preventDefault();
+        handleNavigateBack();
+      } else if (e.altKey && (e.key === 'ArrowRight' || e.key === 'Right')) {
+        e.preventDefault();
+        handleNavigateForward();
+      }
+    };
+
+    window.addEventListener('mouseup', handleMouseUp);
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      unsubBack?.();
+      unsubForward?.();
+      window.removeEventListener('mouseup', handleMouseUp);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [handleNavigateBack, handleNavigateForward]);
+
   // Modals
   const [isCreateBucketOpen, setIsCreateBucketOpen] = useState(false);
   const [renamingBucket, setRenamingBucket] = useState<S3Bucket | null>(null);
@@ -1806,13 +1926,20 @@ export const App: React.FC = () => {
               bucket={selectedBucket}
               prefix={currentPrefix}
               buckets={buckets}
+              canGoBack={canGoBack}
+              canGoForward={canGoForward}
+              onNavigateBack={handleNavigateBack}
+              onNavigateForward={handleNavigateForward}
               onNavigate={(newPrefix) => setCurrentPrefix(newPrefix)}
               onApplyPath={handleApplyNavigationPath}
               onSelectBucket={(b) => {
                 setSelectedBucket(b);
                 setCurrentPrefix('');
               }}
-              onRootClick={() => setCurrentPrefix('')}
+              onRootClick={() => {
+                setSelectedBucket('');
+                setCurrentPrefix('');
+              }}
               onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
             />
 

@@ -428,7 +428,7 @@ export const translations = {
     'settings.securityDesc': 'Все подключения к S3, учетные данные и профили в веб-версии сохраняются изолированно в вашем локальном браузере (localStorage). Сервер работает напрямую внутри вашей локальной сети без промежуточных облачных серверов.',
 
     'settings.aboutAppTitle': 'Syncra',
-    'settings.aboutAppVersion': 'Версия 1.0.1 • Professional Cloud Storage',
+    'settings.aboutAppVersion': 'Версия 1.0.2 • Professional Cloud Storage',
     'settings.aboutAppDesc': 'Быстрый и надежный кроссплатформенный клиент для MinIO, AWS S3, Yandex Cloud и Ceph.',
     'settings.licenseTier': 'Тарифная редакция',
     'settings.proLicenseActive': 'Полнофункциональная лицензия Syncra Pro активна',
@@ -1111,7 +1111,7 @@ export const translations = {
     'settings.securityDesc': 'All S3 connections, credentials, and profiles in the web version are stored strictly in your local browser (localStorage). The server operates directly inside your local network without intermediate cloud servers.',
 
     'settings.aboutAppTitle': 'Syncra',
-    'settings.aboutAppVersion': 'Version 1.0.1 • Professional Cloud Storage',
+    'settings.aboutAppVersion': 'Version 1.0.2 • Professional Cloud Storage',
     'settings.aboutAppDesc': 'Fast and reliable cross-platform client for MinIO, AWS S3, Yandex Cloud, and Ceph.',
     'settings.licenseTier': 'Edition Tier',
     'settings.proLicenseActive': 'Full Pro License is active',

@@ -6,6 +6,7 @@ import {
   Home,
   Copy,
   Check,
+  ArrowLeft,
   ArrowRight,
   X,
   SlidersHorizontal,
@@ -18,6 +19,10 @@ interface BreadcrumbsProps {
   bucket: string;
   prefix: string;
   buckets?: S3Bucket[];
+  canGoBack?: boolean;
+  canGoForward?: boolean;
+  onNavigateBack?: () => void;
+  onNavigateForward?: () => void;
   onNavigate: (newPrefix: string) => void;
   onApplyPath?: (inputPath: string) => Promise<void> | void;
   onSelectBucket?: (bucketName: string) => void;
@@ -29,6 +34,10 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
   bucket,
   prefix,
   buckets = [],
+  canGoBack = false,
+  canGoForward = false,
+  onNavigateBack,
+  onNavigateForward,
   onNavigate,
   onApplyPath,
   onSelectBucket,
@@ -151,6 +160,28 @@ export const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
             <Menu className="w-4 h-4" />
           </button>
         )}
+
+        {/* History Navigation Buttons */}
+        <div className="flex items-center space-x-0.5 mr-1 flex-shrink-0">
+          <button
+            type="button"
+            onClick={onNavigateBack}
+            disabled={!canGoBack}
+            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/60 disabled:opacity-25 disabled:pointer-events-none rounded-md transition-colors"
+            title="Назад (Кнопка мыши 3 / Alt+←)"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+          </button>
+          <button
+            type="button"
+            onClick={onNavigateForward}
+            disabled={!canGoForward}
+            className="p-1.5 text-muted-foreground hover:text-foreground hover:bg-muted/60 disabled:opacity-25 disabled:pointer-events-none rounded-md transition-colors"
+            title="Вперёд (Кнопка мыши 4 / Alt+→)"
+          >
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
 
         <button
           onClick={onRootClick}

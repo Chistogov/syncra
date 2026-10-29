@@ -291,13 +291,21 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
   }, [profile]);
 
   // Load Users
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [usersError, setUsersError] = useState<string | null>(null);
+
   const loadUsers = useCallback(async () => {
     if (!profile) return;
+    setLoadingUsers(true);
+    setUsersError(null);
     try {
       const uList = await window.electronAPI.admin.listUsers(profile);
-      setUsers(uList);
+      setUsers(Array.isArray(uList) ? uList : []);
     } catch (err: any) {
       console.warn('Failed to load users:', err);
+      setUsersError(err.message || 'Ошибка получения списка пользователей');
+    } finally {
+      setLoadingUsers(false);
     }
   }, [profile]);
 
@@ -306,7 +314,7 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
     if (!profile) return;
     try {
       const gList = await window.electronAPI.admin.listGroups(profile);
-      setGroups(gList);
+      setGroups(Array.isArray(gList) ? gList : []);
     } catch (err: any) {
       console.warn('Failed to load groups:', err);
     }
@@ -546,14 +554,29 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
   };
 
   // Compression Configuration actions
+  const [configError, setConfigError] = useState<string | null>(null);
+
   const loadCompressionConfig = useCallback(async () => {
     if (!profile) return;
     setLoadingConfig(true);
+    setConfigError(null);
     try {
       const cfg = await window.electronAPI.admin.getCompressionConfig(profile);
-      setCompressionConfig(cfg);
+      if (cfg) {
+        setCompressionConfig({
+          enable: Boolean(cfg.enable),
+          allow_encryption: Boolean(cfg.allow_encryption),
+          extensions: Array.isArray(cfg.extensions) && cfg.extensions.length > 0
+            ? cfg.extensions
+            : ['.txt', '.log', '.csv', '.json', '.tar', '.xml', '.bin'],
+          mime_types: Array.isArray(cfg.mime_types) && cfg.mime_types.length > 0
+            ? cfg.mime_types
+            : ['text/*', 'application/json', 'application/xml', 'binary/octet-stream'],
+        });
+      }
     } catch (err: any) {
       console.warn('Failed to load compression config:', err);
+      setConfigError(err.message || 'Ошибка загрузки настроек сжатия');
     } finally {
       setLoadingConfig(false);
     }
@@ -565,6 +588,7 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
     try {
       const res = await window.electronAPI.admin.setCompressionConfig(profile, compressionConfig);
       setSuccessMsg(res.message || 'Настройки сжатия успешно сохранены');
+      await loadCompressionConfig();
     } catch (err: any) {
       await showAlert(`Ошибка сохранения настроек сжатия: ${err.message}`);
     } finally {
@@ -633,38 +657,42 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
     let ext = newExtensionInput.trim().toLowerCase();
     if (!ext) return;
     if (!ext.startsWith('.')) ext = `.${ext}`;
-    if (!compressionConfig.extensions.includes(ext)) {
-      setCompressionConfig((prev) => ({
+    setCompressionConfig((prev) => {
+      const list = prev?.extensions || [];
+      if (list.includes(ext)) return prev;
+      return {
         ...prev,
-        extensions: [...prev.extensions, ext],
-      }));
-    }
+        extensions: [...list, ext],
+      };
+    });
     setNewExtensionInput('');
   };
 
   const handleRemoveExtension = (extToRemove: string) => {
     setCompressionConfig((prev) => ({
       ...prev,
-      extensions: prev.extensions.filter((ext) => ext !== extToRemove),
+      extensions: (prev?.extensions || []).filter((ext) => ext !== extToRemove),
     }));
   };
 
   const handleAddMime = () => {
     const mime = newMimeInput.trim().toLowerCase();
     if (!mime) return;
-    if (!compressionConfig.mime_types.includes(mime)) {
-      setCompressionConfig((prev) => ({
+    setCompressionConfig((prev) => {
+      const list = prev?.mime_types || [];
+      if (list.includes(mime)) return prev;
+      return {
         ...prev,
-        mime_types: [...prev.mime_types, mime],
-      }));
-    }
+        mime_types: [...list, mime],
+      };
+    });
     setNewMimeInput('');
   };
 
   const handleRemoveMime = (mimeToRemove: string) => {
     setCompressionConfig((prev) => ({
       ...prev,
-      mime_types: prev.mime_types.filter((m) => m !== mimeToRemove),
+      mime_types: (prev?.mime_types || []).filter((m) => m !== mimeToRemove),
     }));
   };
 
@@ -1086,7 +1114,10 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
       label: 'Пользователи',
       icon: Users,
       badge: users.length,
-      onClick: () => setActiveSubTab('users'),
+      onClick: () => {
+        setActiveSubTab('users');
+        loadUsers();
+      },
       visible: canManageUsers,
     },
     {
@@ -1098,6 +1129,7 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
         setActiveSubTab('groups');
         setIsCreatingGroup(false);
         setEditingGroupName(null);
+        loadGroups();
       },
       visible: canManageRoles,
     },
@@ -1106,7 +1138,10 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
       label: 'Политики IAM',
       icon: Shield,
       badge: policies.length,
-      onClick: () => setActiveSubTab('policies'),
+      onClick: () => {
+        setActiveSubTab('policies');
+        loadPolicies();
+      },
       visible: canManagePolicies,
     },
     {
@@ -1827,6 +1862,15 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
                 <span className="hidden sm:inline text-xs text-muted-foreground whitespace-nowrap">
                   Всего: {filteredUsers.length} пользователей
                 </span>
+                <button
+                  type="button"
+                  onClick={loadUsers}
+                  disabled={loadingUsers}
+                  className="p-1.5 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/60 transition-colors"
+                  title="Обновить список пользователей"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${loadingUsers ? 'animate-spin text-primary' : ''}`} />
+                </button>
               </div>
 
               {canManageUsers && (
@@ -1840,6 +1884,23 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
                 </button>
               )}
             </div>
+
+            {usersError && (
+              <div className="m-4 p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                  <span>{usersError}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={loadUsers}
+                  disabled={loadingUsers}
+                  className="px-2.5 py-1 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-medium transition-colors"
+                >
+                  Повторить
+                </button>
+              </div>
+            )}
 
             {/* Users Table */}
             <div className="overflow-x-auto">
@@ -3026,13 +3087,41 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
                           MinIO автоматически сжимает объекты перед сохранением на диск для экономии дискового пространства.
                         </p>
                       </div>
-                      {loadingConfig && (
-                        <div className="flex items-center space-x-2 text-xs text-primary animate-pulse">
-                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                          <span>Загрузка с MinIO...</span>
-                        </div>
-                      )}
+                      <div className="flex items-center space-x-3">
+                        {loadingConfig && (
+                          <div className="flex items-center space-x-2 text-xs text-primary animate-pulse">
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                            <span>Загрузка с MinIO...</span>
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={loadCompressionConfig}
+                          disabled={loadingConfig}
+                          className="p-1.5 text-muted-foreground hover:text-foreground rounded-md hover:bg-muted/60 transition-colors"
+                          title="Обновить настройки сжатия"
+                        >
+                          <RefreshCw className={`w-3.5 h-3.5 ${loadingConfig ? 'animate-spin text-primary' : ''}`} />
+                        </button>
+                      </div>
                     </div>
+
+                    {configError && (
+                      <div className="p-3 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                          <span>{configError}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={loadCompressionConfig}
+                          disabled={loadingConfig}
+                          className="px-2.5 py-1 rounded bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-medium transition-colors"
+                        >
+                          Повторить
+                        </button>
+                      </div>
+                    )}
 
                     {/* 2-Columns: Extensions & Mime Types (Matching MinIO Console) */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -3049,18 +3138,18 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
                             </span>
                           </label>
                           <span className="text-[11px] text-muted-foreground font-mono">
-                            {compressionConfig.extensions.length} элементов
+                            {(compressionConfig?.extensions || []).length} элементов
                           </span>
                         </div>
 
                         {/* Extensions List */}
                         <div className="flex-1 min-h-[180px] max-h-[260px] overflow-y-auto space-y-1.5 pr-1 border border-border/60 rounded-lg p-2.5 bg-background">
-                          {compressionConfig.extensions.length === 0 ? (
+                          {(compressionConfig?.extensions || []).length === 0 ? (
                             <div className="h-full flex items-center justify-center text-xs text-muted-foreground italic py-8">
                               Список расширений пуст
                             </div>
                           ) : (
-                            compressionConfig.extensions.map((ext) => (
+                            (compressionConfig?.extensions || []).map((ext) => (
                               <div
                                 key={ext}
                                 className="group flex items-center justify-between px-2.5 py-1.5 rounded-md bg-muted/40 hover:bg-muted border border-border/40 text-xs font-mono transition-colors"
@@ -3118,18 +3207,18 @@ export const MinioAdminDashboard: React.FC<MinioAdminDashboardProps> = ({
                             </span>
                           </label>
                           <span className="text-[11px] text-muted-foreground font-mono">
-                            {compressionConfig.mime_types.length} элементов
+                            {(compressionConfig?.mime_types || []).length} элементов
                           </span>
                         </div>
 
                         {/* Mime Types List */}
                         <div className="flex-1 min-h-[180px] max-h-[260px] overflow-y-auto space-y-1.5 pr-1 border border-border/60 rounded-lg p-2.5 bg-background">
-                          {compressionConfig.mime_types.length === 0 ? (
+                          {(compressionConfig?.mime_types || []).length === 0 ? (
                             <div className="h-full flex items-center justify-center text-xs text-muted-foreground italic py-8">
                               Список MIME-типов пуст
                             </div>
                           ) : (
-                            compressionConfig.mime_types.map((mime) => (
+                            (compressionConfig?.mime_types || []).map((mime) => (
                               <div
                                 key={mime}
                                 className="group flex items-center justify-between px-2.5 py-1.5 rounded-md bg-muted/40 hover:bg-muted border border-border/40 text-xs font-mono transition-colors"

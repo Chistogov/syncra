@@ -5,7 +5,7 @@
 **The next-generation GUI client for MinIO, AWS S3, Ceph, Yandex Object Storage, and all S3-compatible storages.**  
 *A fast, keyboard-driven alternative to Cyberduck, WinSCP, and clumsy web consoles.*
 
-[![Version](https://img.shields.io/badge/Release-v1.0.0-emerald?style=for-the-badge&logo=github)](https://github.com/Chistogov/syncra/releases/latest)
+[![Version](https://img.shields.io/badge/Release-v1.0.3-emerald?style=for-the-badge&logo=github)](https://github.com/Chistogov/syncra/releases/latest)
 [![Windows](https://img.shields.io/badge/Platform-Windows-blue?style=for-the-badge&logo=windows)](https://github.com/Chistogov/syncra/releases/latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-purple?style=for-the-badge)](LICENSE)
 [![Stars](https://img.shields.io/github/stars/Chistogov/syncra?style=for-the-badge&color=gold)](https://github.com/Chistogov/syncra/stargazers)
@@ -18,11 +18,11 @@
 
 <!-- HERO CTA DOWNLOAD BUTTONS -->
 <p align="center">
-  <a href="https://github.com/Chistogov/syncra/releases/download/v1.0.0/Syncra.Setup.1.0.0.exe">
+  <a href="https://github.com/Chistogov/syncra/releases/download/v1.0.3/Syncra.Setup.1.0.3.exe">
     <img src="https://img.shields.io/badge/📥_Download_Installer_(Windows)-2563eb?style=for-the-badge&logo=windows&logoColor=white" height="42" alt="Download Syncra Installer" />
   </a>
   &nbsp;&nbsp;
-  <a href="https://github.com/Chistogov/syncra/releases/download/v1.0.0/Syncra.1.0.0.exe">
+  <a href="https://github.com/Chistogov/syncra/releases/download/v1.0.3/Syncra.1.0.3.exe">
     <img src="https://img.shields.io/badge/⚡_Download_Portable_(No_Install)-059669?style=for-the-badge" height="42" alt="Download Portable" />
   </a>
 </p>
@@ -141,8 +141,8 @@ Syncra is built on an **Open-Core** model:
 
 Skip building from source and download ready-to-run Windows binaries:
 
-* **[Download Syncra Setup v1.0.0 (Windows Installer)](https://github.com/Chistogov/syncra/releases/download/v1.0.0/Syncra.Setup.1.0.0.exe)**
-* **[Download Syncra Portable v1.0.0 (.exe without installation)](https://github.com/Chistogov/syncra/releases/download/v1.0.0/Syncra.1.0.0.exe)**
+* **[Download Syncra Setup v1.0.3 (Windows Installer)](https://github.com/Chistogov/syncra/releases/download/v1.0.3/Syncra.Setup.1.0.3.exe)**
+* **[Download Syncra Portable v1.0.3 (.exe without installation)](https://github.com/Chistogov/syncra/releases/download/v1.0.3/Syncra.1.0.3.exe)**
 
 ---
 

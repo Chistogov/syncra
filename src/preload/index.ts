@@ -351,6 +351,16 @@ export const electronAPI = {
     },
   },
 
+  // App lifecycle events (confirm close dialog)
+  app: {
+    onRequestClose: (callback: () => void) => {
+      const handler = () => callback();
+      ipcRenderer.on('app:requestClose', handler);
+      return () => ipcRenderer.removeListener('app:requestClose', handler);
+    },
+    confirmClose: (): Promise<void> => ipcRenderer.invoke('app:confirmClose'),
+  },
+
   // Helper to extract native filesystem path from DOM File object (Electron 28+)
   getPathForFile: (file: File): string => {
     try {

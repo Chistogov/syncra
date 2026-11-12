@@ -23,7 +23,7 @@ interface ObjectTableRowProps {
   onToggleSelect: (key: string) => void;
   onItemOpen: (item: S3Item) => void;
   onContextMenu: (item: S3Item, pos: { x: number; y: number }) => void;
-  onPreview: (item: S3Item) => void;
+  onPreview: (item: S3Item, isExplicit?: boolean) => void;
   onDownload: (item: S3Item) => void;
   onOpenExternal: (item: S3Item) => void;
   onPresignedUrl: (item: S3Item) => void;
@@ -128,6 +128,7 @@ const ObjectTableRow: React.FC<ObjectTableRowProps> = ({
 
   return (
     <tr
+      data-preview-item-key={item.key}
       onClick={handleClick}
       onContextMenu={handleContextMenu}
       onTouchStart={handleTouchStart}
@@ -210,7 +211,11 @@ const ObjectTableRow: React.FC<ObjectTableRowProps> = ({
           ) : (
             <>
               <button
-                onClick={() => onPreview(item)}
+                data-preview-trigger="true"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onPreview(item, true);
+                }}
                 className="p-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
                 title={t('table.quickPreview')}
               >
@@ -288,7 +293,7 @@ export interface ObjectTableProps {
   onSelectAll: () => void;
   onItemDoubleClick: (item: S3Item) => void;
   onItemContextMenu: (item: S3Item, pos: { x: number; y: number }) => void;
-  onPreview: (item: S3Item) => void;
+  onPreview: (item: S3Item, isExplicit?: boolean) => void;
   onDownload: (item: S3Item) => void;
   onOpenExternal: (item: S3Item) => void;
   onPresignedUrl: (item: S3Item) => void;

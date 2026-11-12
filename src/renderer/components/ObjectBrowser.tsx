@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react';
 import {
   Upload,
   Download,
@@ -59,7 +59,7 @@ interface ObjectBrowserProps {
   onOpenTransfers?: () => void;
   onRefresh: () => void;
   onOpenFolder: (folderPrefix: string) => void;
-  onPreview: (item: S3Item) => void;
+  onPreview: (item: S3Item, isExplicit?: boolean) => void;
   onDownloadItem: (item: S3Item) => void;
   onOpenExternal: (item: S3Item) => void;
   onPresignedUrl: (item: S3Item) => void;
@@ -154,6 +154,58 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
   const [customTagQuery, setCustomTagQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const mobileSearchInputRef = useRef<HTMLInputElement>(null);
+
+  // Dynamic Toolbar Action Collapse Level:
+  // 0: All buttons show icons and full text
+  // 1: Group 1 ("Файлы", "Папка", "Новая папка", "Копировать") collapsed to icons only, Group 2 ("Теги", "Переместить", "Скачать", "Удалить") has text
+  // 2: Group 1 and Group 2 collapsed to icons only
+  const [toolbarCollapseLevel, setToolbarCollapseLevel] = useState<0 | 1 | 2>(0);
+  const toolbarRef = useRef<HTMLDivElement>(null);
+  const measureLevel0Ref = useRef<HTMLDivElement>(null);
+  const measureLevel1Ref = useRef<HTMLDivElement>(null);
+
+  const updateToolbarCollapse = useCallback(() => {
+    if (!toolbarRef.current) return;
+    const availableWidth = toolbarRef.current.clientWidth - 16;
+    const widthLevel0 = measureLevel0Ref.current
+      ? Math.ceil(measureLevel0Ref.current.getBoundingClientRect().width)
+      : 0;
+    const widthLevel1 = measureLevel1Ref.current
+      ? Math.ceil(measureLevel1Ref.current.getBoundingClientRect().width)
+      : 0;
+
+    if (widthLevel0 > 0 && availableWidth >= widthLevel0) {
+      setToolbarCollapseLevel(0);
+    } else if (widthLevel1 > 0 && availableWidth >= widthLevel1) {
+      setToolbarCollapseLevel(1);
+    } else {
+      setToolbarCollapseLevel(2);
+    }
+  }, []);
+
+  useLayoutEffect(() => {
+    updateToolbarCollapse();
+  }, [
+    updateToolbarCollapse,
+    selectedKeys.size,
+    canUpload,
+    canCreateFolder,
+    canEditTags,
+    canMutateItems,
+    canDeleteItems,
+    t,
+  ]);
+
+  useEffect(() => {
+    const el = toolbarRef.current;
+    if (!el) return;
+
+    const ro = new ResizeObserver(() => {
+      updateToolbarCollapse();
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [updateToolbarCollapse]);
 
   // Sorting
   const [sortField, setSortField] = useState<'name' | 'size' | 'lastModified'>('name');
@@ -663,7 +715,10 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
       )}
 
       {/* Plane.so Toolbar Header */}
-      <div className="h-12 px-3 sm:px-4 border-b border-border flex items-center justify-between text-xs bg-plane-surface/40">
+      <div
+        ref={toolbarRef}
+        className="h-12 px-3 sm:px-4 border-b border-border flex items-center justify-between text-xs bg-plane-surface/40 min-w-0 relative z-20"
+      >
         {isMobileSearchOpen ? (
           /* Mobile Search Bar: Hides actions and spans across entire toolbar */
           <div className="flex-1 flex items-center space-x-2 animate-in fade-in duration-150">
@@ -709,38 +764,44 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
           </div>
         ) : (
           <>
-            {/* Left Actions (Shadcn Buttons) */}
-            <div className="flex items-center space-x-1.5 sm:space-x-2 min-w-0">
+            {/* Left Actions (Responsive Collapsible Action Buttons) */}
+            <div className="flex items-center space-x-1.5 sm:space-x-2 min-w-0 overflow-hidden">
               {canUpload && (
                 <button
                   onClick={onUploadFilesClick}
-                  className="flex items-center space-x-1.5 p-1.5 sm:px-3 sm:py-1.5 bg-primary hover:bg-primary-hover text-primary-foreground font-medium rounded-md transition-colors shadow-xs whitespace-nowrap flex-shrink-0"
+                  className={`flex items-center space-x-1.5 bg-primary hover:bg-primary-hover text-primary-foreground font-medium rounded-md transition-colors shadow-xs whitespace-nowrap flex-shrink-0 ${
+                    toolbarCollapseLevel === 0 ? 'px-3 py-1.5' : 'p-1.5'
+                  }`}
                   title={t('browser.uploadFilesTooltip')}
                 >
                   <Upload className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">{t('browser.uploadFiles')}</span>
+                  {toolbarCollapseLevel === 0 && <span>{t('browser.uploadFiles')}</span>}
                 </button>
               )}
 
               {canUpload && (
                 <button
                   onClick={onUploadFolderClick}
-                  className="flex items-center space-x-1.5 p-1.5 sm:px-3 sm:py-1.5 bg-plane-surface hover:bg-muted text-foreground border border-border rounded-md transition-colors font-medium shadow-xs whitespace-nowrap flex-shrink-0"
+                  className={`flex items-center space-x-1.5 bg-plane-surface hover:bg-muted text-foreground border border-border rounded-md transition-colors font-medium shadow-xs whitespace-nowrap flex-shrink-0 ${
+                    toolbarCollapseLevel === 0 ? 'px-3 py-1.5' : 'p-1.5'
+                  }`}
                   title={t('browser.uploadFolderTooltip')}
                 >
                   <FolderUp className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span className="hidden sm:inline">{t('browser.uploadFolder')}</span>
+                  {toolbarCollapseLevel === 0 && <span>{t('browser.uploadFolder')}</span>}
                 </button>
               )}
 
               {canCreateFolder && (
                 <button
                   onClick={onCreateFolderClick}
-                  className="flex items-center space-x-1.5 p-1.5 sm:px-3 sm:py-1.5 bg-plane-surface hover:bg-muted text-foreground border border-border rounded-md transition-colors font-medium whitespace-nowrap flex-shrink-0"
+                  className={`flex items-center space-x-1.5 bg-plane-surface hover:bg-muted text-foreground border border-border rounded-md transition-colors font-medium whitespace-nowrap flex-shrink-0 ${
+                    toolbarCollapseLevel === 0 ? 'px-3 py-1.5' : 'p-1.5'
+                  }`}
                   title={t('browser.newFolderTooltip')}
                 >
                   <FolderPlus className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span className="hidden md:inline">{t('browser.newFolder')}</span>
+                  {toolbarCollapseLevel === 0 && <span>{t('browser.newFolder')}</span>}
                 </button>
               )}
 
@@ -766,13 +827,22 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
               {selectedKeys.size > 0 && (
                 <div className="flex items-center space-x-1.5 sm:space-x-2 pl-1.5 sm:pl-2 border-l border-border animate-fade-in whitespace-nowrap flex-shrink-0">
                   <span className="text-[11px] font-medium text-muted-foreground bg-muted px-1.5 sm:px-2 py-0.5 rounded-md">
-                    <span className="hidden sm:inline">{t('browser.selected')}&nbsp;</span>{selectedKeys.size}
+                    {toolbarCollapseLevel === 0 ? (
+                      <>
+                        <span className="hidden sm:inline">{t('browser.selected')}&nbsp;</span>
+                        {selectedKeys.size}
+                      </>
+                    ) : (
+                      selectedKeys.size
+                    )}
                   </span>
                   {window.electronAPI?.isElectron && (
                     <button
                       onClick={() => handleCopySelected()}
                       disabled={copyState?.isCopying}
-                      className="flex items-center space-x-1 p-1.5 sm:px-2.5 sm:py-1 text-foreground hover:bg-muted border border-border rounded-md transition-colors font-medium text-xs shadow-xs whitespace-nowrap flex-shrink-0"
+                      className={`flex items-center space-x-1 text-foreground hover:bg-muted border border-border rounded-md transition-colors font-medium text-xs shadow-xs whitespace-nowrap flex-shrink-0 ${
+                        toolbarCollapseLevel === 0 ? 'p-1.5 sm:px-2.5 sm:py-1' : 'p-1.5'
+                      }`}
                       title={t('browser.copyTooltip')}
                     >
                       {copyState?.isCopying ? (
@@ -780,7 +850,7 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
                       ) : (
                         <Copy className="w-3.5 h-3.5 text-muted-foreground" />
                       )}
-                      <span className="hidden sm:inline">{t('browser.copy')}</span>
+                      {toolbarCollapseLevel === 0 && <span>{t('browser.copy')}</span>}
                     </button>
                   )}
                   {canEditTags && (() => {
@@ -795,7 +865,9 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
                           }
                         }}
                         disabled={!hasSelectedFiles}
-                        className={`flex items-center space-x-1 p-1.5 sm:px-2.5 sm:py-1 border rounded-md transition-colors font-medium text-xs shadow-xs whitespace-nowrap flex-shrink-0 ${
+                        className={`flex items-center space-x-1 border rounded-md transition-colors font-medium text-xs shadow-xs whitespace-nowrap flex-shrink-0 ${
+                          toolbarCollapseLevel < 2 ? 'p-1.5 sm:px-2.5 sm:py-1' : 'p-1.5'
+                        } ${
                           hasSelectedFiles
                             ? 'text-foreground hover:bg-muted border-border cursor-pointer'
                             : 'text-muted-foreground/40 border-border/50 cursor-not-allowed opacity-50'
@@ -807,7 +879,7 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
                         }
                       >
                         <Tag className="w-3.5 h-3.5 text-muted-foreground" />
-                        <span className="hidden sm:inline">{t('browser.tags')}</span>
+                        {toolbarCollapseLevel < 2 && <span>{t('browser.tags')}</span>}
                       </button>
                     );
                   })()}
@@ -819,11 +891,13 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
                           setMovingItems(sel);
                         }
                       }}
-                      className="flex items-center space-x-1 p-1.5 sm:px-2.5 sm:py-1 text-foreground hover:bg-muted border border-border rounded-md transition-colors font-medium text-xs shadow-xs whitespace-nowrap flex-shrink-0 cursor-pointer"
+                      className={`flex items-center space-x-1 text-foreground hover:bg-muted border border-border rounded-md transition-colors font-medium text-xs shadow-xs whitespace-nowrap flex-shrink-0 cursor-pointer ${
+                        toolbarCollapseLevel < 2 ? 'p-1.5 sm:px-2.5 sm:py-1' : 'p-1.5'
+                      }`}
                       title={t('menu.move')}
                     >
                       <FolderInput className="w-3.5 h-3.5 text-muted-foreground" />
-                      <span className="hidden sm:inline">{t('menu.move')}</span>
+                      {toolbarCollapseLevel < 2 && <span>{t('menu.move')}</span>}
                     </button>
                   )}
                   <button
@@ -833,22 +907,26 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
                         onDownloadSelected(selectedItems);
                       }
                     }}
-                    className="flex items-center space-x-1 p-1.5 sm:px-2.5 sm:py-1 text-foreground hover:bg-muted border border-border rounded-md transition-colors font-medium text-xs shadow-xs whitespace-nowrap flex-shrink-0"
+                    className={`flex items-center space-x-1 text-foreground hover:bg-muted border border-border rounded-md transition-colors font-medium text-xs shadow-xs whitespace-nowrap flex-shrink-0 ${
+                      toolbarCollapseLevel < 2 ? 'p-1.5 sm:px-2.5 sm:py-1' : 'p-1.5'
+                    }`}
                     title={t('browser.downloadTooltip')}
                   >
                     <Download className="w-3.5 h-3.5 text-muted-foreground" />
-                    <span className="hidden sm:inline">{t('browser.download')}</span>
+                    {toolbarCollapseLevel < 2 && <span>{t('browser.download')}</span>}
                   </button>
                   {canDeleteItems && (
                     <button
                       onClick={() => {
                         onDeleteItems(Array.from(selectedKeys));
                       }}
-                      className="flex items-center space-x-1 p-1.5 sm:px-2.5 sm:py-1 text-destructive hover:bg-destructive/10 border border-destructive/20 rounded-md transition-colors font-medium text-xs whitespace-nowrap flex-shrink-0"
+                      className={`flex items-center space-x-1 text-destructive hover:bg-destructive/10 border border-destructive/20 rounded-md transition-colors font-medium text-xs whitespace-nowrap flex-shrink-0 ${
+                        toolbarCollapseLevel < 2 ? 'p-1.5 sm:px-2.5 sm:py-1' : 'p-1.5'
+                      }`}
                       title={t('browser.deleteTooltip')}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
-                      <span className="hidden sm:inline">{t('browser.delete')}</span>
+                      {toolbarCollapseLevel < 2 && <span>{t('browser.delete')}</span>}
                     </button>
                   )}
                 </div>
@@ -1335,6 +1413,195 @@ export const ObjectBrowser: React.FC<ObjectBrowserProps> = ({
         onClose={() => setMovingItems(null)}
         onMoveConfirm={handleMoveConfirm}
       />
+
+      {/* Invisible measurement elements to determine toolbar collapse levels */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none opacity-0 select-none invisible -z-50"
+        style={{
+          position: 'fixed',
+          top: -9999,
+          left: -9999,
+          width: 'max-content',
+          maxWidth: 'none',
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          visibility: 'hidden',
+        }}
+      >
+        <div
+          ref={measureLevel0Ref}
+          className="inline-flex items-center space-x-4 px-4 text-xs font-sans whitespace-nowrap"
+          style={{ width: 'max-content', maxWidth: 'none' }}
+        >
+          {/* Left Actions with Level 0 full texts */}
+          <div className="flex items-center space-x-2">
+            {canUpload && (
+              <div className="flex items-center space-x-1.5 px-3 py-1.5 font-medium rounded-md whitespace-nowrap">
+                <Upload className="w-3.5 h-3.5" />
+                <span>{t('browser.uploadFiles')}</span>
+              </div>
+            )}
+            {canUpload && (
+              <div className="flex items-center space-x-1.5 px-3 py-1.5 font-medium rounded-md whitespace-nowrap">
+                <FolderUp className="w-3.5 h-3.5" />
+                <span>{t('browser.uploadFolder')}</span>
+              </div>
+            )}
+            {canCreateFolder && (
+              <div className="flex items-center space-x-1.5 px-3 py-1.5 font-medium rounded-md whitespace-nowrap">
+                <FolderPlus className="w-3.5 h-3.5" />
+                <span>{t('browser.newFolder')}</span>
+              </div>
+            )}
+            {!canUpload && !canCreateFolder && (
+              <div className="flex items-center space-x-1.5 px-2.5 py-1 text-[11px] font-medium whitespace-nowrap">
+                <Lock className="w-3.5 h-3.5" />
+                <span>{t('browser.readOnlyBadge')}</span>
+              </div>
+            )}
+            <div className="p-1.5">
+              <RefreshCw className="w-3.5 h-3.5" />
+            </div>
+
+            {selectedKeys.size > 0 && (
+              <div className="flex items-center space-x-2 pl-2 border-l border-border whitespace-nowrap">
+                <span className="text-[11px] font-medium px-2 py-0.5 rounded-md">
+                  <span>{t('browser.selected')}&nbsp;</span>
+                  {selectedKeys.size}
+                </span>
+                {window.electronAPI?.isElectron && (
+                  <div className="flex items-center space-x-1 px-2.5 py-1 font-medium text-xs whitespace-nowrap">
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>{t('browser.copy')}</span>
+                  </div>
+                )}
+                {canEditTags && (
+                  <div className="flex items-center space-x-1 px-2.5 py-1 font-medium text-xs whitespace-nowrap">
+                    <Tag className="w-3.5 h-3.5" />
+                    <span>{t('browser.tags')}</span>
+                  </div>
+                )}
+                {canMutateItems && (
+                  <div className="flex items-center space-x-1 px-2.5 py-1 font-medium text-xs whitespace-nowrap">
+                    <FolderInput className="w-3.5 h-3.5" />
+                    <span>{t('menu.move')}</span>
+                  </div>
+                )}
+                <div className="flex items-center space-x-1 px-2.5 py-1 font-medium text-xs whitespace-nowrap">
+                  <Download className="w-3.5 h-3.5" />
+                  <span>{t('browser.download')}</span>
+                </div>
+                {canDeleteItems && (
+                  <div className="flex items-center space-x-1 px-2.5 py-1 font-medium text-xs whitespace-nowrap">
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>{t('browser.delete')}</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Right Tools */}
+          <div className="flex items-center space-x-2.5">
+            <div className="w-44 pl-8 pr-7 py-1 text-xs whitespace-nowrap">
+              <span>{t('browser.searchInFolder')}</span>
+            </div>
+            <div className="flex items-center space-x-1.5 px-2.5 py-1 text-xs whitespace-nowrap">
+              <Tag className="w-3.5 h-3.5" />
+              <span>{t('tagPopover.button')}</span>
+            </div>
+            <div className="flex items-center p-0.5 space-x-1">
+              <div className="p-1"><List className="w-3.5 h-3.5" /></div>
+              <div className="p-1"><LayoutGrid className="w-3.5 h-3.5" /></div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          ref={measureLevel1Ref}
+          className="inline-flex items-center space-x-4 px-4 text-xs font-sans whitespace-nowrap"
+          style={{ width: 'max-content', maxWidth: 'none' }}
+        >
+          {/* Left Actions with Level 1 (Group 1: "Файлы", "Папка", "Новая папка", "Копировать" icon only; Group 2 with text) */}
+          <div className="flex items-center space-x-2">
+            {canUpload && (
+              <div className="p-1.5 font-medium rounded-md whitespace-nowrap">
+                <Upload className="w-3.5 h-3.5" />
+              </div>
+            )}
+            {canUpload && (
+              <div className="p-1.5 font-medium rounded-md whitespace-nowrap">
+                <FolderUp className="w-3.5 h-3.5" />
+              </div>
+            )}
+            {canCreateFolder && (
+              <div className="p-1.5 font-medium rounded-md whitespace-nowrap">
+                <FolderPlus className="w-3.5 h-3.5" />
+              </div>
+            )}
+            {!canUpload && !canCreateFolder && (
+              <div className="flex items-center space-x-1.5 px-2.5 py-1 text-[11px] font-medium whitespace-nowrap">
+                <Lock className="w-3.5 h-3.5" />
+                <span>{t('browser.readOnlyBadge')}</span>
+              </div>
+            )}
+            <div className="p-1.5">
+              <RefreshCw className="w-3.5 h-3.5" />
+            </div>
+
+            {selectedKeys.size > 0 && (
+              <div className="flex items-center space-x-2 pl-2 border-l border-border whitespace-nowrap">
+                <span className="text-[11px] font-medium px-2 py-0.5 rounded-md">
+                  {selectedKeys.size}
+                </span>
+                {window.electronAPI?.isElectron && (
+                  <div className="p-1.5 font-medium text-xs whitespace-nowrap">
+                    <Copy className="w-3.5 h-3.5" />
+                  </div>
+                )}
+                {canEditTags && (
+                  <div className="flex items-center space-x-1 px-2.5 py-1 font-medium text-xs whitespace-nowrap">
+                    <Tag className="w-3.5 h-3.5" />
+                    <span>{t('browser.tags')}</span>
+                  </div>
+                )}
+                {canMutateItems && (
+                  <div className="flex items-center space-x-1 px-2.5 py-1 font-medium text-xs whitespace-nowrap">
+                    <FolderInput className="w-3.5 h-3.5" />
+                    <span>{t('menu.move')}</span>
+                  </div>
+                )}
+                <div className="flex items-center space-x-1 px-2.5 py-1 font-medium text-xs whitespace-nowrap">
+                  <Download className="w-3.5 h-3.5" />
+                  <span>{t('browser.download')}</span>
+                </div>
+                {canDeleteItems && (
+                  <div className="flex items-center space-x-1 px-2.5 py-1 font-medium text-xs whitespace-nowrap">
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>{t('browser.delete')}</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Right Tools */}
+          <div className="flex items-center space-x-2.5">
+            <div className="w-44 pl-8 pr-7 py-1 text-xs whitespace-nowrap">
+              <span>{t('browser.searchInFolder')}</span>
+            </div>
+            <div className="flex items-center space-x-1.5 px-2.5 py-1 text-xs whitespace-nowrap">
+              <Tag className="w-3.5 h-3.5" />
+              <span>{t('tagPopover.button')}</span>
+            </div>
+            <div className="flex items-center p-0.5 space-x-1">
+              <div className="p-1"><List className="w-3.5 h-3.5" /></div>
+              <div className="p-1"><LayoutGrid className="w-3.5 h-3.5" /></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

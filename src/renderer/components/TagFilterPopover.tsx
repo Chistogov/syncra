@@ -158,6 +158,8 @@ export const TagFilterPopover: React.FC<TagFilterPopoverProps> = ({
       {isOpen && (
         <div
           ref={popoverRef}
+          role="dialog"
+          data-modal="tag-popover"
           className="absolute right-0 top-full mt-1.5 w-72 sm:w-80 bg-plane-surface border border-border rounded-xl shadow-2xl z-50 p-3.5 flex flex-col space-y-3 animate-in fade-in zoom-in-95 duration-100 select-none text-foreground"
         >
           {/* Header */}

@@ -416,10 +416,11 @@ export const ImageGalleryModal: React.FC<ImageGalleryModalProps> = ({
           {/* Close */}
           <button
             onClick={onClose}
-            className="p-1.5 sm:p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors ml-1"
-            title={t('gallery.close')}
+            className="flex items-center space-x-1.5 px-3 py-1.5 bg-white/10 hover:bg-rose-500/20 text-white/90 hover:text-rose-200 border border-white/20 hover:border-rose-500/40 rounded-lg transition-all ml-2 shadow-xs cursor-pointer"
+            title={`${t('gallery.close')} (Esc)`}
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
+            <span className="text-xs font-medium hidden sm:inline">{t('gallery.close')}</span>
           </button>
         </div>
       </div>

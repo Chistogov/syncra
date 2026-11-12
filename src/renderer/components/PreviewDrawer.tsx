@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   X,
   Download,
@@ -71,6 +71,44 @@ export const PreviewDrawer: React.FC<PreviewDrawerProps> = ({
   const [isAddingTag, setIsAddingTag] = useState(false);
   const [newKey, setNewKey] = useState('');
   const [newValue, setNewValue] = useState('');
+  const drawerRef = useRef<HTMLDivElement>(null);
+
+  // Close drawer when clicking outside (in object browser, table, grid, toolbar, etc.)
+  useEffect(() => {
+    if (!isOpen || !item) return;
+
+    const handlePointerDown = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null;
+      if (!target || !drawerRef.current) return;
+
+      // 1. If click is inside the drawer itself, ignore
+      if (drawerRef.current.contains(target)) return;
+
+      // 2. If click is inside any active modal / dialog / popover / context-menu, ignore
+      if (
+        target.closest('[role="dialog"]') ||
+        target.closest('.modal-backdrop') ||
+        target.closest('.context-menu') ||
+        target.closest('[data-radix-portal]') ||
+        target.closest('[data-modal]')
+      ) {
+        return;
+      }
+
+      // 3. If clicking explicit quick preview trigger button (e.g. Eye icon), let that button handle it
+      if (target.closest('[data-preview-trigger]')) {
+        return;
+      }
+
+      // 4. Any other click in the object browser (table, grid, empty space, toolbar, etc.) closes the drawer
+      onClose();
+    };
+
+    window.addEventListener('pointerdown', handlePointerDown, true);
+    return () => {
+      window.removeEventListener('pointerdown', handlePointerDown, true);
+    };
+  }, [isOpen, item, onClose]);
 
   useEffect(() => {
     if (isOpen && item && profile && !item.isPrefix) {
@@ -172,7 +210,10 @@ export const PreviewDrawer: React.FC<PreviewDrawerProps> = ({
   if (!isOpen || !item) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 z-40 w-full max-w-xl bg-plane-surface border-l border-border shadow-2xl flex flex-col text-foreground animate-fade-in">
+    <div
+      ref={drawerRef}
+      className="fixed inset-y-0 right-0 z-40 w-full max-w-xl bg-plane-surface border-l border-border shadow-2xl flex flex-col text-foreground animate-fade-in"
+    >
       {/* Plane.so Sheet Header */}
       <div className="flex items-center justify-between px-5 py-3 border-b border-border bg-plane-surface/80">
         <div className="flex items-center space-x-2.5 overflow-hidden">

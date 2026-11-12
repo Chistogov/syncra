@@ -79,7 +79,7 @@ interface ObjectGridCardProps {
   onToggleSelect: (key: string) => void;
   onItemOpen: (item: S3Item) => void;
   onContextMenu: (item: S3Item, pos: { x: number; y: number }) => void;
-  onPreview: (item: S3Item) => void;
+  onPreview: (item: S3Item, isExplicit?: boolean) => void;
   onDownload: (item: S3Item) => void;
   onOpenExternal: (item: S3Item) => void;
   onPresignedUrl: (item: S3Item) => void;
@@ -187,6 +187,7 @@ const ObjectGridCard: React.FC<ObjectGridCardProps> = ({
 
   return (
     <div
+      data-preview-item-key={item.key}
       onClick={handleClick}
       onContextMenu={handleContextMenu}
       onTouchStart={handleTouchStart}
@@ -264,9 +265,10 @@ const ObjectGridCard: React.FC<ObjectGridCardProps> = ({
         ) : (
           <>
             <button
+              data-preview-trigger="true"
               onClick={(e) => {
                 e.stopPropagation();
-                onPreview(item);
+                onPreview(item, true);
               }}
               className="p-1 hover:text-foreground text-muted-foreground hover:bg-muted rounded"
               title={t('table.quickPreview')}
@@ -411,7 +413,7 @@ export interface ObjectGridProps {
   onToggleSelect: (key: string, isShift: boolean) => void;
   onItemDoubleClick: (item: S3Item) => void;
   onItemContextMenu: (item: S3Item, pos: { x: number; y: number }) => void;
-  onPreview: (item: S3Item) => void;
+  onPreview: (item: S3Item, isExplicit?: boolean) => void;
   onDownload: (item: S3Item) => void;
   onOpenExternal: (item: S3Item) => void;
   onPresignedUrl: (item: S3Item) => void;

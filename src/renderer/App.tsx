@@ -355,6 +355,35 @@ export const App: React.FC = () => {
     };
   }, [handleNavigateBack, handleNavigateForward]);
 
+  // Window Close Confirmation (prevents accidental exit, especially when closing modal views)
+  const isClosingConfirmOpenRef = useRef(false);
+  useEffect(() => {
+    const unsub = window.electronAPI?.app?.onRequestClose?.(async () => {
+      if (isClosingConfirmOpenRef.current) return;
+      isClosingConfirmOpenRef.current = true;
+      try {
+        const ok = await confirm({
+          title: t('app.confirmCloseTitle') || 'Закрытие программы',
+          message: t('app.confirmCloseMessage') || 'Вы действительно хотите закрыть Syncra?',
+          confirmText: t('app.confirmCloseButton') || 'Закрыть программу',
+          cancelText: t('common.cancel') || 'Отмена',
+          variant: 'warning',
+        });
+        if (ok) {
+          await window.electronAPI?.app?.confirmClose?.();
+        }
+      } catch (err) {
+        console.warn('Error during close confirmation:', err);
+      } finally {
+        isClosingConfirmOpenRef.current = false;
+      }
+    });
+
+    return () => {
+      unsub?.();
+    };
+  }, [confirm, t]);
+
   // Modals
   const [isCreateBucketOpen, setIsCreateBucketOpen] = useState(false);
   const [renamingBucket, setRenamingBucket] = useState<S3Bucket | null>(null);
@@ -365,10 +394,16 @@ export const App: React.FC = () => {
   const [editingMonacoItem, setEditingMonacoItem] = useState<S3Item | null>(null);
   const [galleryItem, setGalleryItem] = useState<S3Item | null>(null);
 
-  // Reset preview drawer when switching bucket or profile
+  // Reset preview drawer when switching folder, bucket or profile
   useEffect(() => {
     setPreviewItem(null);
-  }, [selectedBucket, activeProfile]);
+  }, [selectedBucket, currentPrefix, activeProfile]);
+
+  const lastDrawerCloseTimestampRef = useRef<number>(0);
+  const handleClosePreview = useCallback(() => {
+    lastDrawerCloseTimestampRef.current = Date.now();
+    setPreviewItem(null);
+  }, []);
 
   const clearPreviewIfAffected = useCallback((mutatedKeys: string[]) => {
     setPreviewItem((prev) => {
@@ -1752,7 +1787,11 @@ export const App: React.FC = () => {
   };
 
   // Handle Preview (routes to right drawer for all file types)
-  const handlePreviewItem = (item: S3Item) => {
+  const handlePreviewItem = (item: S3Item, isExplicit = false) => {
+    // If the drawer was closed just now by an outside click, don't immediately re-open it
+    if (!isExplicit && Date.now() - lastDrawerCloseTimestampRef.current < 350) {
+      return;
+    }
     setPreviewItem(item);
   };
 
@@ -2152,7 +2191,7 @@ export const App: React.FC = () => {
 
       <PreviewDrawer
         isOpen={Boolean(previewItem)}
-        onClose={() => setPreviewItem(null)}
+        onClose={handleClosePreview}
         item={previewItem}
         profile={activeProfile}
         bucket={selectedBucket}

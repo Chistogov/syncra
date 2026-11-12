@@ -1,7 +1,7 @@
 {
   "name": "syncra",
   "productName": "Syncra",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Syncra — Modern S3 and MinIO Cloud Explorer with Edit-in-Place support",
   "main": "dist-electron/main/index.js",
   "scripts": {

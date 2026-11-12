@@ -14,6 +14,7 @@ import { S3Profile, S3Item, S3Tag } from '../common/types';
 app.setName('Syncra');
 
 let mainWindow: BrowserWindow | null = null;
+let isAppQuitting = false;
 const s3Service = new S3Service();
 const profileStore = new ProfileStore();
 const minioAdmin = new MinioAdminService();
@@ -125,10 +126,24 @@ function createWindow() {
     mainWindow.loadFile(path.join(__dirname, '../../dist/index.html'));
   }
 
+  mainWindow.on('close', (e) => {
+    if (isAppQuitting) {
+      return;
+    }
+    e.preventDefault();
+    mainWindow?.webContents.send('app:requestClose');
+  });
+
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
 }
+
+// IPC handler to confirm window/app close from renderer
+ipcMain.handle('app:confirmClose', () => {
+  isAppQuitting = true;
+  mainWindow?.close();
+});
 
 app.whenReady().then(() => {
   migrateLegacyUserData();
@@ -896,6 +911,10 @@ app.whenReady().then(() => {
       createWindow();
     }
   });
+});
+
+app.on('before-quit', () => {
+  isAppQuitting = true;
 });
 
 app.on('window-all-closed', () => {
